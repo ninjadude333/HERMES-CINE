@@ -118,6 +118,17 @@ long the owner has been unresponsive.** Waiting is always the correct default ov
 - The numbered subfolder structure (`00_brief/` through `09_final_export/`) tells you where each
   stage's output should land — see `docs/HERMES-CINE-SCAFFOLD.md` §1.5 for the full tree.
 
+### Stage 3 Handoff Spec (LOCKED — required when composing a dispatch prompt to comfyui-expert)
+When dispatching Stage 3 (Ref Image Lock), the prompt to `comfyui-expert` must specify the LOCKED
+resolution spec — do not omit it or let comfyui-expert guess:
+- **Scene/full reference image (characters and locations):** 1536×864 (16:9) — 2x final 720p
+  render res, clean integer downscale to 1280×720
+- **Character face-lock crop:** additional square 1024×1024 per character, alongside the 16:9 scene
+  ref (for PuLID-style face-embedding consistency) — characters only, not locations
+- **Locations:** 1536×864 only, no square crop needed
+- Read the confirmed `bios.md` from `02_characters_locations/` for character/location descriptions
+  to include in the handoff prompt — do not invent visual details not present in bios.md.
+
 ### Dispatch Mechanics
 - `hermes -p <target-profile> chat -q "<prompt>" -Q` is the standard dispatch call. Telegram-to-
   Telegram dispatch between agents is not used for automated routing — only CLI.
