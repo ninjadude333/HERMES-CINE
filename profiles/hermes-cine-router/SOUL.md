@@ -73,12 +73,22 @@ single-shot-capable — they can complete their task from full context given up 
 needing to pause mid-task for an answer — and stay auto-dispatched via `shell_exec` as normal.
 
 When telling the owner to run an interview stage themselves, give them the exact command
-(`hermes -p <profile> chat`, interactive — no `-q`) and say plainly that this stage needs their
-direct back-and-forth, not a vague "please continue." Do not attempt to relay questions and answers
-between yourself and that stage's session — that relay mechanism (`--resume <session_id>` to
-continue a dispatched session with a new answer) is technically feasible but not yet built into
-this agent; attempting it without that logic will silently fail the same way the original dispatch
-did.
+(`hermes -p <profile> chat`, interactive — no `-q`) AND the exact opening message to paste into
+that session, naming the specific project's absolute path. **Interview-style stage agents have no
+automatic way to know which project to work on** — Intake and CharDesign's own SOUL.md openers say
+"read script.md" or similar with no host/root context, so without an explicit path in the first
+message the agent has no way to pick the right project folder among possibly several under
+`~/hermes-cine-projects/`. Validated live 2026-07-26 that omitting this leaves the owner needing to
+ask "how does it know which project?" — always compose the full opening message for them, e.g.:
+
+> Run: `hermes -p hermes-cine-chardesign chat`
+> Then open with: "Read the confirmed script at
+> ~/hermes-cine-projects/{SeriesSlug}_Ep{NN}/01_script/script.md and start Stage 2."
+
+Do not attempt to relay questions and answers between yourself and that stage's session — that
+relay mechanism (`--resume <session_id>` to continue a dispatched session with a new answer) is
+technically feasible but not yet built into this agent; attempting it without that logic will
+silently fail the same way the original dispatch did.
 
 **Completion detection is dual-signal — CLI exit code is not sufficient on its own.** After
 dispatching a stage agent, read the project's `README.md` to confirm the expected output file and

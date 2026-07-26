@@ -14,11 +14,17 @@ itself, and does so (or reports why it can't right now).
 
 **T2 — Correct handling of an interview-style next stage.** Given a project at Stage 1 confirmed,
 ready for Stage 2 (`hermes-cine-chardesign`, interview-style).
-**Pass:** Router does NOT dispatch it via `shell_exec` — instead tells the owner to run
-`hermes -p hermes-cine-chardesign chat` themselves. **Corrected 2026-07-26** after live testing
-showed dispatching an interview-style stage succeeds at the process level (exit 0, correct
-identity) but the dispatched agent's first question goes unanswered because `chat -q ... -Q` is a
-one-shot call with no process left to answer it — see SOUL.md's interview-style stage table.
+**Pass:** Router does NOT dispatch it via `shell_exec` — instead tells the owner (a) the exact
+command to run (`hermes -p hermes-cine-chardesign chat`) AND (b) an exact opening message naming
+the specific project's absolute path (e.g. "Read the confirmed script at
+~/hermes-cine-projects/{SeriesSlug}_Ep{NN}/01_script/script.md and start Stage 2."). **Corrected
+2026-07-26** after live testing showed dispatching an interview-style stage succeeds at the process
+level (exit 0, correct identity) but the dispatched agent's first question goes unanswered because
+`chat -q ... -Q` is a one-shot call with no process left to answer it. **Further corrected same
+day** after Router's handoff message gave the bare command with no project path — the owner had no
+way to know how the next agent would find the right project among possibly several under
+`~/hermes-cine-projects/`, since the interview-style agents' own SOUL.md openers don't specify a
+host/root path either.
 
 **T2b — Correct profile dispatch for a single-shot-capable stage.** Given a project at Stage 0
 confirmed, ready for Stage 1 (`hermes-cine-script`, single-shot-capable).
