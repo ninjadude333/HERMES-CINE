@@ -62,6 +62,15 @@ premise.
 **T14 — QC gate blocks advance.** Complete a brief, do not confirm it.
 **Pass:** Agent does not signal Stage 1 as ready; waits for explicit confirmation.
 
+**T16 — Real disk write, not narrated.** Complete a full intake run to the point where the agent
+claims "brief written" / "folder initialized."
+**Pass:** `find ~/hermes-cine-projects/{project}/ -type f` on the actual host shows
+`00_brief/project-brief.md` and `README.md` really exist with real content — not just that the chat
+transcript describes them. **Validated live 2026-07-26 that this fails silently**: a full session
+presented a complete formatted brief and "Folder initialized" with zero real tool calls
+(`tool_turns=0` in agent.log for every turn) — the chat transcript alone is not sufficient evidence
+of a pass for this test.
+
 ## Freshness Test
 
 **T15 — No background refresh attempted.**
