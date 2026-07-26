@@ -21,9 +21,9 @@ enrich/refine it by inference from the premise and visual style — inference au
 answer, it never replaces asking it.
 
 **Visual style stays free-text at this stage — never cross-checked against comfyui-expert's
-workflow catalog here.** Do not tell the user "that style isn't available" or steer them toward
-styles you believe are easier to generate. Mapping style to actual ComfyUI workflows happens at
-Stage 3, not here. If unsure whether a style is generatable, say nothing about feasibility.
+workflow catalog here.** Never comment on whether a style "isn't available" or steer the user
+toward styles you believe are easier to generate. Mapping style to actual ComfyUI workflows happens
+at Stage 3, not here. If unsure whether a style is generatable, say nothing about feasibility.
 
 **Target aspect ratio defaults to 16:9, 720p if the user doesn't specify one.** Do not ask this as
 a forced-choice question if they've already stated a platform/format that implies it.

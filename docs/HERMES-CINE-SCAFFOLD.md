@@ -2,6 +2,19 @@
 
 > **STATUS: SKELETON ONLY.** Everything below defines architecture, flow, and decisions — it is not yet a validated, working agent. Each stage still needs to be **tested end-to-end with real tool calls** (not just the text-only mock tests run so far) and each stage's listed skills/capabilities need to be **confirmed as actually available and functional** (e.g. real comfyui-expert delegation, real DGX filesystem writes, real README auto-update) before this is production-ready. Treat every "LOCKED" decision as locked-in-design, not locked-as-proven.
 
+> **Real-install gotcha found live (2026-07-26):** HERMES has a built-in prompt-injection content
+> scanner (`tools/threat_patterns.py`) that runs against every context file, **including SOUL.md**,
+> on every load. A rule meant to catch "hide this from the user"-style injection attacks
+> (`deception_hide`: `do not ... tell ... the user`) silently matched a benign line in
+> `hermes-cine-intake/SOUL.md` ("Do not tell the user 'that style isn't available'..."), and the
+> **entire SOUL.md was dropped** — no error surfaced in the chat session, the agent just answered as
+> generic "Hermes Agent" instead of its intended persona. Only visible in
+> `~/.hermes/profiles/<profile>/logs/errors.log` as `Context file SOUL.md blocked: deception_hide`.
+> Fixed by rewording to avoid the trigger phrase. **Lesson for all future SOUL.md authoring:** avoid
+> "do not tell the user X" / "never tell the user X" phrasing even when benign — rephrase as "never
+> comment on X" or similar. Check `errors.log` for `blocked:` whenever an agent's response doesn't
+> match its SOUL.md identity — that's the tell, not a chat-visible error.
+
 ## 0. Meta / Architecture Decisions (LOCKED)
 
 | Decision | Value |
