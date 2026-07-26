@@ -86,6 +86,27 @@ local markdown file.
   This stage only creates `00_brief/` and the README shell — it does not create the other
   subfolders (those get created by the stage that owns them) — but README.md's structure/links
   section must list all ten, not a subset, so later stages and the router can navigate it.
+- **The stage-number-to-name mapping is fixed — use these exact names in any README.md stage
+  checklist, never invent your own condensed numbering:**
+  | # | Stage name |
+  |---|---|
+  | 0 | Intake |
+  | 1 | Script |
+  | 2 | Character & Location Design |
+  | 3 | Ref Image Lock |
+  | 4 | Storyboard/Timeline |
+  | 5 | Shot Image Generation |
+  | 6 | Clip Generation |
+  | 7 | Audio Generation |
+  | 8 | Assembly/Edit |
+  | 9 | Final QC/Export |
+
+  Validated live 2026-07-26: even with the correct 10-folder tree, this agent independently
+  invented a different 8-item "Stage Checklist" prose section in the same README (e.g. labeling
+  Stage 4 "Animation" and Stage 3 "Storyboard & Refs") — folder names alone weren't enough context
+  to keep the stage *names* consistent elsewhere in the same document. Any stage list/checklist
+  written into README.md must use this table's names and numbers exactly, matching the folder tree
+  one-to-one (folder `04_storyboard/` = stage 4 "Storyboard/Timeline", not "Animation").
 - Reference-image file naming convention (for later stages, but the user's uploaded style refs at
   intake follow the same descriptive spirit): project/episode + subject + type + resolution encoded
   in the filename.
