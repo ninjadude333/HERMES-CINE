@@ -71,8 +71,26 @@ the model every time (validated live: Router's first real dispatch ran with zero
 until this was added); stage agents will autonomously self-author skills, invent extra files, leave
 README.md partially updated, hallucinate file writes with zero real tool calls, and leak
 project-specific details across sessions via memory — all now explicitly guarded against in SOUL.md.
-**Next up:** hermes-cine-chardesign has a real package (folds in all of the above) but hasn't been
-installed/run live yet — that's the next test, followed by a real Router-driven dispatch to it.
+**hermes-cine-chardesign installed live 2026-07-26 and Router successfully dispatched it for
+real** (subprocess ran, exit 0, correct SOUL.md identity, correctly followed ref-images-first
+order and asked its first question) — **but this surfaced a genuine architectural gap, not a bug
+in chardesign's behavior:** `chat -q "<prompt>" -Q` is a one-shot call — the process exits after
+one response, so there is no way for Router to answer a follow-up question; the session just
+died with the question unanswered. Confirmed via `ps aux` (no process left running) and session
+export (transcript stopped at 6 messages).
+
+**Resolution (LOCKED 2026-07-26, see scaffold §1.6 for full detail):** interview-style stages
+(Intake, CharDesign — anything whose design involves genuine back-and-forth) are never dispatched
+by Router; Router detects "prior stage confirmed, this stage not started" and notifies the owner
+to run it themselves (`hermes -p <profile> chat`, interactive) — the exact manual flow already
+proven in every real test. Single-shot-capable stages (Script, likely Storyboard/Assembly) stay
+auto-dispatched by Router as before. `--resume <session_id>` was confirmed live to genuinely
+continue a session's full history, so a fully-automated Q&A relay is technically feasible as a
+**future enhancement** — deliberately deferred until the simpler owner-run flow is solid.
+
+**Next up:** update hermes-cine-router's SOUL.md to recognize interview-style stages and hand
+them back to the owner instead of dispatching; re-test the full Router flow across a mix of
+owner-run and auto-dispatched stages.
 
 ## Conventions to follow without re-deriving
 

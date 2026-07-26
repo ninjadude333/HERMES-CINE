@@ -122,6 +122,42 @@ Examples: `AlienDogTwins_Ep01_char-twin-brother-1_scene-ref_curious_1536x864.png
 
 **Completion detection (LOCKED):** Dual-signal — CLI exit code is read as an immediate pass/fail signal, but the project's `README.md` is the actual source of truth for pipeline state. A zero exit code doesn't mean "advance"; the router still confirms the expected stage output/confirmation flag is present in the project folder before dispatching the next stage. **Validated live:** this caution is justified — tested nonexistent profile, unconfigured profile, and empty-prompt-hang cases; all three returned **exit code 0**. Exit code is effectively meaningless on this HERMES build; README.md state-check is not a nice-to-have, it is the only real signal.
 
+**Interview-style stages are owner-run, not Router-dispatched (LOCKED, discovered live 2026-07-26).**
+`hermes -p <profile> chat -q "<prompt>" -Q` is fundamentally a **one-shot, non-interactive call** —
+it sends one prompt, gets one response, and the process exits. There is no way for Router to
+"continue" that conversation if the dispatched agent asks a clarifying question, because the
+process is already dead by the time its response comes back.
+
+This was discovered live when Router successfully dispatched `hermes-cine-chardesign` (a real
+subprocess ran, exit code 0, SOUL.md loaded correctly) — the agent correctly followed its
+ref-images-first design and asked its first question, then the session simply ended with no way to
+answer it. Confirmed via `ps aux` that no process was left running, and via session export that the
+transcript stopped at exactly 6 messages, the agent's question unanswered.
+
+**Resolution — split by stage type, not a Router redesign:**
+- **Interview-style stages (Intake, CharDesign, and any future stage whose LOCKED design involves
+  genuine back-and-forth — asking questions, waiting for answers, adapting to what's provided) are
+  never dispatched by Router.** Instead, Router detects "the prior stage is confirmed and this
+  stage hasn't started" and **notifies the owner directly** to run that stage themselves:
+  `hermes -p <profile> chat` (interactive, no `-q`) — exactly the manual flow already proven to
+  work in every real test so far. Router's job for these stages is to say whose turn it is, not to
+  conduct the interview.
+- **Single-shot-capable stages (e.g. Script, once a format choice is made; likely Storyboard,
+  Assembly) stay auto-dispatched by Router** via the existing `chat -q "..." -Q` mechanism — these
+  don't need mid-task back-and-forth once given full context up front.
+- Router resumes normal auto-dispatch once README.md shows the owner-run stage confirmed.
+
+**Future enhancement, not yet built:** `--resume <session_id>` was confirmed live to genuinely
+continue a prior session's full conversation history (tested by resuming the dead chardesign
+session and getting a coherent, context-aware follow-up response). This means a **fully automated
+relay** — Router detects "needs input," notifies the owner with the specific question, waits for a
+reply, then re-invokes with `--resume <session_id> chat -q "<answer>" -Q`, repeating until the
+agent signals real completion — is technically feasible and could fully automate interview stages
+later. Deliberately deferred: it requires new Router logic to distinguish "agent is asking a
+question" from "agent is done," state-tracking for in-flight interviews, and hasn't been validated
+across a full multi-question interview (only a single resume-and-answer round was tested). Build
+this once the simpler owner-run flow above is solid, not before.
+
 **Router placement (LOCKED):** Router runs on EC2, same host as the other HERMES instances, so it has local shell access for `hermes -p <profile> chat -q "..." -Q` calls without needing SSH/remote dispatch overhead.
 
 **Agent naming (LOCKED — Functional, lowercase-hyphenated):** Names are lowercase-hyphenated, not uppercase — the real `hermes profile create` silently forces profile directory names to lowercase, and `-p <profile>` requires an exact case match (mixed-case input fails with an unhelpful generic argparse error, not a helpful correction). Discovered live on 2026-07-26; the convention was revised repo-wide to match rather than fight the tool.
@@ -383,7 +419,7 @@ Every column = same card template:
 |---|---|---|---|
 | 0 — Intake | Yes | Yes (mock + multiple real runs) | Yes — live on EC2, 2026-07-26. Real disk writes, correct folder/stage-name/owner tables, confirmation persists to disk. Several real bugs found and fixed along the way (see CLAUDE.md log). |
 | 1 — Script | Yes | Yes (mock + real run) | Yes — live on EC2, 2026-07-26. Real disk writes, character list correctly merged into script.md (not a separate file), root README fully updated. |
-| Router | Yes | N/A (orchestration agent) | Yes — live on EC2, 2026-07-26. Composed and ran a real `hermes -p <profile> chat -q "..." -Q` dispatch subprocess; correctly handled unconfirmed-state block and not-yet-built-target failure (exit 1) without inventing a workaround. Human-gate on `shell_exec` found to be unenforced by HERMES itself and fixed via explicit SOUL.md instruction. Not yet tested: dispatch to a profile that exists and runs to completion. |
+| Router | Yes | N/A (orchestration agent) | Yes — live on EC2, 2026-07-26. Composed and ran a real `hermes -p <profile> chat -q "..." -Q` dispatch subprocess against three different scenarios: unconfirmed-state block, not-yet-built-target (exit 1), and a real existing target (`hermes-cine-chardesign`, exit 0, correct SOUL.md identity). Human-gate on `shell_exec` found to be unenforced by HERMES itself and fixed via explicit SOUL.md instruction — now confirmed working (real approval prompt observed). **Found the dispatch-mode architectural gap** (interview-style stages can't be dispatched via one-shot `-q` — see §1.6) and the fix (interview stages become owner-run, not Router-dispatched) is designed but not yet implemented in Router's SOUL.md or re-tested. |
 | 2 — Character/Location Design | Yes | No | No — real package generated (folds in every live-validated lesson from Stages 0/1/Router), not yet installed or run live. |
 | 3 — Ref Image Lock | Partial (res spec + folder conventions locked) | Yes (2 real comfyui-expert runs, images came back good) | Partial — real generation validated, but not yet through full Stage 2→3 handoff with actual bios.md |
 | 4 — Storyboard/Timeline | Not yet specced | No | No |
