@@ -1,4 +1,4 @@
-# SETUP.md — HERMES-CINE-SCRIPT
+# SETUP.md — hermes-cine-script
 
 Directives for HERMES to self-configure this agent from the package in this folder.
 
@@ -22,9 +22,9 @@ Directives for HERMES to self-configure this agent from the package in this fold
 ## Notes specific to this agent
 
 - This is a **Stage 1** agent in the HERMES-CINE multi-agent pipeline (see
-  `docs/HERMES-CINE-SCAFFOLD.md` in the repo root). It is invoked by `HERMES-CINE-ROUTER` via
-  `hermes -p HERMES-CINE-SCRIPT -- <args>`, expects `project-brief.md` to already exist in
-  `00_brief/`, and hands off by writing `script.md` + character list into `01_script/` for the
+  `docs/HERMES-CINE-SCAFFOLD.md` in the repo root). It is invoked by `hermes-cine-router` via
+  `hermes -p hermes-cine-script chat -q "<prompt>" -Q`, expects `project-brief.md` to already exist
+  in `00_brief/`, and hands off by writing `script.md` + character list into `01_script/` for the
   router to detect via `README.md`.
 - If `project-brief.md` is missing or unconfirmed (per README.md state), this agent should refuse to
   proceed and report the gap rather than guessing at brief content.

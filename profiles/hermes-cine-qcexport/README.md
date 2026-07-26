@@ -1,4 +1,4 @@
-# HERMES-CINE-QCEXPORT (Stage 9)
+# hermes-cine-qcexport (Stage 9)
 
 **Status: not yet specced.**
 

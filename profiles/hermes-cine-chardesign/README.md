@@ -1,4 +1,4 @@
-# HERMES-CINE-CHARDESIGN (Stage 2)
+# hermes-cine-chardesign (Stage 2)
 
 **Design reference:** docs/HERMES-CINE-SCAFFOLD.md §2, Stage 2
 

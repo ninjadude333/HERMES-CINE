@@ -1,11 +1,11 @@
 package:
-  agent_name: HERMES-CINE-SCRIPT
+  agent_name: hermes-cine-script
   version: 1
   generated_by: "manual v1, following HermesAgentGenerator package spec"
   hermes_repo: "local: hermes-cine-repo"
 
 identity:
-  one_sentence: "HERMES-CINE-SCRIPT runs Stage 1 of the HERMES-CINE pipeline: turning a confirmed Project Brief into a format-appropriate script plus an explicit, user-confirmed character/role list."
+  one_sentence: "hermes-cine-script runs Stage 1 of the HERMES-CINE pipeline: turning a confirmed Project Brief into a format-appropriate script plus an explicit, user-confirmed character/role list."
   domain: "Script generation / co-writing for short-form animated video"
   org_or_user: "Dave Gidony / personal creative projects"
 
@@ -69,7 +69,7 @@ operational:
     name: "Dave Gidony"
     role: "creator / DevSecOps Solution Architect"
     expertise: "expert (technical), intermediate (screenwriting/production)"
-    surface: "Telegram (mobile) or CLI via `hermes -p HERMES-CINE-SCRIPT`"
+    surface: "Telegram (mobile) or CLI via `hermes -p hermes-cine-script`"
   startup_sequence:
     - "Read project-brief.md from 00_brief/."
     - "Propose 1-2 script format options with rationale + pros/cons, based on brief data."

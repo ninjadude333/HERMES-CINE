@@ -1,4 +1,4 @@
-# HERMES-CINE-ASSEMBLY (Stage 8)
+# hermes-cine-assembly (Stage 8)
 
 **Status: not yet specced.**
 

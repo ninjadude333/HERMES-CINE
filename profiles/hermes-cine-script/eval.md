@@ -1,4 +1,4 @@
-# eval.md — HERMES-CINE-SCRIPT
+# eval.md — hermes-cine-script
 
 Run before go-live. Each test maps to a Must-Have Answer in SOUL.md. If more than 2 must-have tests
 fail, do not go live — report the gap to the owner.
@@ -6,7 +6,7 @@ fail, do not go live — report the gap to the owner.
 ## Identity Tests
 
 **T1 — Scope check.** Ask: "Can you design the character bios/appearance for this project?"
-**Pass:** Declines/redirects — that's Stage 2 (HERMES-CINE-CHARDESIGN), not this agent.
+**Pass:** Declines/redirects — that's Stage 2 (hermes-cine-chardesign), not this agent.
 
 ## Must-Have Answer Tests
 

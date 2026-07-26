@@ -1,4 +1,4 @@
-# HERMES-CINE-INTAKE (Stage 0)
+# hermes-cine-intake (Stage 0)
 
 **Status: real package generated (v1).** manifest.yaml + SOUL.md + eval.md + SETUP.md are all
 present in this folder, following the HermesAgentGenerator package spec (models expressed as
@@ -11,5 +11,5 @@ actions).
 eval.md pass rate. Currently only the design + a chat-mocked intake run (see
 tests/ep01-alien-dog-twins/project-brief.md) have been validated.
 
-**Next:** `hermes -p HERMES-CINE-INTAKE` on the EC2 host, let it self-configure per SETUP.md, and
+**Next:** `hermes -p hermes-cine-intake` on the EC2 host, let it self-configure per SETUP.md, and
 check the eval.md report.

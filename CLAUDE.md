@@ -28,10 +28,10 @@ one unified agent) that dispatch to each other via CLI, plus delegation to the u
 
 - **Architecture:** fully locked — see scaffold §0, §1.5, §1.6, §1.7
 - **Stages 0, 1:** fully specced AND have real generated packages (manifest.yaml + SOUL.md +
-  eval.md + SETUP.md) in `profiles/HERMES-CINE-INTAKE/` and `profiles/HERMES-CINE-SCRIPT/`
-- **Router:** fully specced AND has a real generated package in `profiles/HERMES-CINE-ROUTER/` —
+  eval.md + SETUP.md) in `profiles/hermes-cine-intake/` and `profiles/hermes-cine-script/`
+- **Router:** fully specced AND has a real generated package in `profiles/hermes-cine-router/` —
   notably has NO worker/escalation model tier, orchestrator (Haiku) only, by design
-- **Stage 2 (HERMES-CINE-CHARDESIGN):** fully specced in the scaffold, but no real package
+- **Stage 2 (hermes-cine-chardesign):** fully specced in the scaffold, but no real package
   generated yet
 - **Stage 3 (comfyui-expert delegation):** real generation runs completed and passed (2 test runs,
   resolution spec corrected between v1 and v2 handoff prompts — see tests/ folder)
@@ -41,11 +41,17 @@ one unified agent) that dispatch to each other via CLI, plus delegation to the u
 
 ## The one big open architectural risk
 
-The whole multi-agent design rests on: HERMES-CINE-ROUTER dispatching other stage agents via
-`hermes -p <profile> -- <args>` as a subprocess (since one HERMES profile cannot spawn a different
-profile as a child — see scaffold §1.6 for why). **This has never actually been run.** The highest-
-value next test is running the three real packages on the real HERMES/EC2 instance and confirming
-Router can dispatch Intake then Script in sequence, reading README.md correctly at each step.
+The whole multi-agent design rests on: hermes-cine-router dispatching other stage agents via
+`hermes -p <profile> chat -q "<prompt>" -Q` as a subprocess (since one HERMES profile cannot spawn a
+different profile as a child — see scaffold §1.6 for why). **CLI dispatch mechanism itself validated
+live on 2026-07-26** against the real HERMES CLI on hermano.dudelabz.com — `-p` works and is
+per-invocation scoped, but two corrections were made to the original design (see scaffold §1.6 for
+detail): the `-- <args>` syntax is invalid (use `chat -q "<prompt>" -Q` instead), and exit code is
+not a trustworthy signal on this build (always 0, even on real failures) — README.md state-check is
+mandatory, not a nice-to-have. Naming convention was also revised to lowercase-hyphenated
+repo-wide, since the real CLI silently lowercases profile directory names and requires exact-case
+match for `-p`. **Still not yet done:** actually installing the three packages as live profiles on
+the EC2 host and running a real Router → Intake → Script dispatch chain end to end.
 
 ## Conventions to follow without re-deriving
 
@@ -58,8 +64,8 @@ Router can dispatch Intake then Script in sequence, reading README.md correctly 
 - Ref image resolution: 1536×864 scene refs + 1024×1024 square face-lock crops per character
 - Model routing is decided **per-stage**, never assumed blanket — check what each profile's
   manifest.yaml actually declares rather than assuming the standard Haiku→worker→escalation chain
-- Naming convention for all stage agents is **functional** (`HERMES-CINE-SCRIPT`, not
-  `HERMES-CINE-SCRIPTWRITER`) — see scaffold §1.6 naming table
+- Naming convention for all stage agents is **functional** (`hermes-cine-script`, not
+  `hermes-cine-scriptWRITER`) — see scaffold §1.6 naming table
 
 ## What NOT to do
 

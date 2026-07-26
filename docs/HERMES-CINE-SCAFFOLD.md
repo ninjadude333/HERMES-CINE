@@ -76,29 +76,33 @@ Examples: `AlienDogTwins_Ep01_char-twin-brother-1_scene-ref_curious_1536x864.png
 
 **Why not one profile:** Confirmed via review of your actual HERMES architecture — each HERMES instance loads **one profile** (`manifest.yaml` + `SOUL.md` + tool allowlist), with internal delegation limited to a fixed 3-tier model chain **within that profile** (Bedrock Haiku orchestrator → local Ollama worker → local Ollama escalation). That chain cannot spawn a *different* profile/identity as a child — cross-profile invocation requires a separate running instance, exactly like comfyui-expert already is.
 
-**Dispatch mechanism (LOCKED):** Router uses CLI dispatch as the default — `hermes -p <target-profile> -- <args>` invoked as a subprocess, the same way you already trigger comfyui-expert manually via `hermes -p comfyui-expert` on the EC2 terminal. Telegram-based dispatch stays available as a secondary/manual path (e.g. for you to intervene directly on a stage agent), but CLI is what the router uses to move the pipeline forward automatically.
+**Dispatch mechanism (LOCKED, syntax validated live 2026-07-26):** Router uses CLI dispatch as the default — `hermes -p <target-profile> chat -q "<prompt>" -Q` invoked as a subprocess, the same way you already trigger comfyui-expert manually via `hermes -p comfyui-expert` on the EC2 terminal. Telegram-based dispatch stays available as a secondary/manual path (e.g. for you to intervene directly on a stage agent), but CLI is what the router uses to move the pipeline forward automatically.
 
-**Completion detection (LOCKED):** Dual-signal — CLI exit code is read as an immediate pass/fail signal, but the project's `README.md` is the actual source of truth for pipeline state. A zero exit code doesn't mean "advance"; the router still confirms the expected stage output/confirmation flag is present in the project folder before dispatching the next stage.
+**Validated against the real CLI (2026-07-26, hermano.dudelabz.com):** `-p <profile>` is a real, working flag despite being undocumented in `hermes --help` — confirmed it's scoped per-invocation, not global (running with `-p` does not mutate `~/.hermes/active_profile`). Two corrections to the original design:
+- The literal `-- <args>` syntax from earlier drafts of this doc **does not work** — bare `--` before a subcommand is an argparse error. The confirmed-working non-interactive form is `hermes -p <profile> chat -q "<prompt>" -Q` (`-Q` = quiet mode, built for programmatic use — suppresses banner/spinner/tool previews).
+- An empty or malformed `-q` prompt causes `hermes` to silently fall through to an **interactive TUI session** instead of erroring — a hang risk for an unattended Router. Router must never dispatch with an empty prompt string.
 
-**Router placement (LOCKED):** Router runs on EC2, same host as the other HERMES instances, so it has local shell access for `hermes -p` calls without needing SSH/remote dispatch overhead.
+**Completion detection (LOCKED):** Dual-signal — CLI exit code is read as an immediate pass/fail signal, but the project's `README.md` is the actual source of truth for pipeline state. A zero exit code doesn't mean "advance"; the router still confirms the expected stage output/confirmation flag is present in the project folder before dispatching the next stage. **Validated live:** this caution is justified — tested nonexistent profile, unconfigured profile, and empty-prompt-hang cases; all three returned **exit code 0**. Exit code is effectively meaningless on this HERMES build; README.md state-check is not a nice-to-have, it is the only real signal.
 
-**Agent naming (LOCKED — Functional):**
+**Router placement (LOCKED):** Router runs on EC2, same host as the other HERMES instances, so it has local shell access for `hermes -p <profile> chat -q "..." -Q` calls without needing SSH/remote dispatch overhead.
+
+**Agent naming (LOCKED — Functional, lowercase-hyphenated):** Names are lowercase-hyphenated, not uppercase — the real `hermes profile create` silently forces profile directory names to lowercase, and `-p <profile>` requires an exact case match (mixed-case input fails with an unhelpful generic argparse error, not a helpful correction). Discovered live on 2026-07-26; the convention was revised repo-wide to match rather than fight the tool.
 
 | Stage | Agent profile name |
 |---|---|
-| Router/orchestrator | `HERMES-CINE-ROUTER` |
-| 0 — Intake | `HERMES-CINE-INTAKE` |
-| 1 — Script | `HERMES-CINE-SCRIPT` |
-| 2 — Character/Location Design | `HERMES-CINE-CHARDESIGN` |
+| Router/orchestrator | `hermes-cine-router` |
+| 0 — Intake | `hermes-cine-intake` |
+| 1 — Script | `hermes-cine-script` |
+| 2 — Character/Location Design | `hermes-cine-chardesign` |
 | 3 — Ref Image Lock | delegates to existing `comfyui-expert` |
-| 4 — Storyboard/Timeline | `HERMES-CINE-STORYBOARD` |
+| 4 — Storyboard/Timeline | `hermes-cine-storyboard` |
 | 5 — Shot Image Gen | delegates to `comfyui-expert` |
 | 6 — Clip Gen | delegates to `comfyui-expert` |
 | 7 — Audio Gen | delegates to `comfyui-expert` |
-| 8 — Assembly/Edit | `HERMES-CINE-ASSEMBLY` |
-| 9 — Final QC/Export | `HERMES-CINE-QCEXPORT` |
+| 8 — Assembly/Edit | `hermes-cine-assembly` |
+| 9 — Final QC/Export | `hermes-cine-qcexport` |
 
-Lightweight stages (4, 8, 9) are candidates to fold into `HERMES-CINE-ROUTER` itself rather than getting a fully separate profile, if they end up thin enough during build — to revisit once Stage 4+ are specced.
+Lightweight stages (4, 8, 9) are candidates to fold into `hermes-cine-router` itself rather than getting a fully separate profile, if they end up thin enough during build — to revisit once Stage 4+ are specced.
 
 ## 1.7 Failure Handling, Notifications & Model Routing (LOCKED)
 

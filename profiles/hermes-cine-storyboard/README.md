@@ -1,4 +1,4 @@
-# HERMES-CINE-STORYBOARD (Stage 4)
+# hermes-cine-storyboard (Stage 4)
 
 **Status: not yet specced.**
 

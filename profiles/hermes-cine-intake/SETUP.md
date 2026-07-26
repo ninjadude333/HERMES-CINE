@@ -1,4 +1,4 @@
-# SETUP.md — HERMES-CINE-INTAKE
+# SETUP.md — hermes-cine-intake
 
 Directives for HERMES to self-configure this agent from the package in this folder.
 
@@ -25,8 +25,8 @@ Directives for HERMES to self-configure this agent from the package in this fold
 
 - This is a **Stage 0** agent in the HERMES-CINE multi-agent pipeline (see
   `docs/HERMES-CINE-SCAFFOLD.md` in the repo root for full pipeline context). It does not call
-  other HERMES profiles — it is invoked by `HERMES-CINE-ROUTER` via
-  `hermes -p HERMES-CINE-INTAKE -- <args>` and hands off by writing `project-brief.md` +
+  other HERMES profiles — it is invoked by `hermes-cine-router` via
+  `hermes -p hermes-cine-intake chat -q "<prompt>" -Q` and hands off by writing `project-brief.md` +
   `README.md` for the router to detect.
 - If the project folder root (`/data/hermes-cine-projects/`) doesn't exist yet on this host, create
   it on first run rather than failing.

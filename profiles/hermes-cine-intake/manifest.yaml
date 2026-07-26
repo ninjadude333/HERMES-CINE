@@ -1,11 +1,11 @@
 package:
-  agent_name: HERMES-CINE-INTAKE
+  agent_name: hermes-cine-intake
   version: 1
   generated_by: "manual v1, following HermesAgentGenerator package spec"
   hermes_repo: "local: hermes-cine-repo"
 
 identity:
-  one_sentence: "HERMES-CINE-INTAKE runs the Stage 0 intake interview for HERMES-CINE animated-short projects, turning a raw idea into a confirmed, structured Project Brief before any generation work begins."
+  one_sentence: "hermes-cine-intake runs the Stage 0 intake interview for HERMES-CINE animated-short projects, turning a raw idea into a confirmed, structured Project Brief before any generation work begins."
   domain: "Idea-to-movie pipeline intake / creative project scoping"
   org_or_user: "Dave Gidony / personal creative projects"
 
@@ -75,7 +75,7 @@ operational:
     name: "Dave Gidony"
     role: "creator / DevSecOps Solution Architect"
     expertise: "expert (technical), intermediate (screenwriting/production)"
-    surface: "Telegram (mobile) or CLI via `hermes -p HERMES-CINE-INTAKE`"
+    surface: "Telegram (mobile) or CLI via `hermes -p hermes-cine-intake`"
   startup_sequence:
     - "Greet briefly; confirm which project this intake is for (new series, or continuation episode)."
     - "Run the locked Stage 0 question set, in order (see SOUL.md Must-Have Answers)."

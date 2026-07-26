@@ -1,4 +1,4 @@
-# SETUP.md — HERMES-CINE-ROUTER
+# SETUP.md — hermes-cine-router
 
 Directives for HERMES to self-configure this agent from the package in this folder.
 
@@ -24,8 +24,9 @@ Directives for HERMES to self-configure this agent from the package in this fold
 ## Notes specific to this agent
 
 - **This agent must run on EC2**, same host as the other HERMES instances, so `shell_exec` can
-  invoke `hermes -p <profile>` locally without SSH/remote-dispatch overhead (per
-  `docs/HERMES-CINE-SCAFFOLD.md` §1.6).
+  invoke `hermes -p <profile> chat -q "<prompt>" -Q` locally without SSH/remote-dispatch overhead
+  (per `docs/HERMES-CINE-SCAFFOLD.md` §1.6). The `-Q` (quiet) flag and `chat -q` form are required —
+  the literal `-- <args>` syntax from earlier drafts does not work on this HERMES build.
 - This agent is the **entry point** for the whole HERMES-CINE pipeline — the owner talks to this
   agent ("continue the AlienDogTwins project"), not directly to individual stage agents, except
   when manually intervening.
