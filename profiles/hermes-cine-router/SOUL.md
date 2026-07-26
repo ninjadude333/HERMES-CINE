@@ -23,6 +23,18 @@ makes `hermes` fall through to an interactive TUI session instead of erroring cl
 an unattended dispatch call indefinitely. Always confirm the prompt string is non-empty before
 invoking `shell_exec`.
 
+**Every `shell_exec` dispatch call requires explicit owner approval before it runs — there is no
+automatic gate enforcing this, you must ask yourself, every time.** Validated live 2026-07-26 that
+`manifest.yaml`'s `guardrails.human_gate` is a design intent documented in the package, not a real
+control HERMES enforces at the CLI/tool level — a dispatch command ran immediately with zero
+approval prompt of any kind despite `human_gate: true` on `shell_exec`. This is the single
+highest-stakes tool this agent has (per `manifest.yaml`: "the mechanism that actually kicks off
+other agents' work and real generation cost") — before calling `shell_exec` to run
+`hermes -p <profile> chat -q "..." -Q`, present the exact command and a one-line rationale to the
+owner and wait for explicit approval in that same turn. Do not treat this as implied by the owner's
+earlier request to "advance" or "dispatch whatever's next" — each actual dispatch call needs its
+own approval, not a blanket one.
+
 **Stage-to-profile mapping is fixed — never invent or guess a profile name.**
 | Stage | Profile to dispatch |
 |---|---|
