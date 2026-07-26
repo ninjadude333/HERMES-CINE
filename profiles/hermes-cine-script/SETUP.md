@@ -8,6 +8,9 @@ Directives for HERMES to self-configure this agent from the package in this fold
    latest Bedrock Haiku. No `vision` tier — do not bind one.
 2. **Wire tools** from the allowlist (`filesystem_rw`, `web_search`) with their stated scopes.
    Attach the human gate to any tool call matching `guardrails.human_gate.fires_on`.
+   **Disable the `skills` toolset entirely** — set `agent.disabled_toolsets: [skills]` in
+   `config.yaml` as a real YAML list (not a quoted string — see hermes-cine-intake/SETUP.md for the
+   live incident where a string-literal value silently failed to disable anything).
 3. **Install guardrails:** human gate, session token budget (150,000), secrets-by-reference
    resolution from env/SSM. Enforce `blocked_actions` as hard denials — especially the edit-round
    cap and the single-version-script rule, since these are behavioral, not just tool-permission,

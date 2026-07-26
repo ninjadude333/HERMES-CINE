@@ -58,6 +58,9 @@ guardrails:
     - "dispatch with an empty or blank -q prompt string"
       # Validated live 2026-07-26: an empty/malformed prompt causes hermes to fall through to an
       # interactive TUI session instead of erroring — a hang risk for unattended dispatch.
+    - "author or save skills describing its own workflow"
+      # See hermes-cine-intake/manifest.yaml for the live-validated incident this rule is based on
+      # -- applies to every narrow single-purpose HERMES-CINE stage agent, not just Stage 0.
 
 interface:
   channels: [telegram, cli]

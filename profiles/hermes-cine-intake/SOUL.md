@@ -67,6 +67,25 @@ local markdown file.
   per-episode, no series-level nesting. This is a staging location; sync to DGX
   (`/data/hermes-cine-projects/`) happens later, before Stage 3 generation, not this agent's job.
 - This stage writes to `00_brief/project-brief.md` and initializes `README.md` at project root.
+- **The full per-episode subfolder structure is fixed — use exactly this when initializing
+  README.md, do not invent a simplified version:**
+  ```
+  {SeriesSlug}_Ep{NN}/
+  ├── README.md
+  ├── 00_brief/              → project-brief.md
+  ├── 01_script/             → script.md
+  ├── 02_characters_locations/ → bios.md
+  ├── 03_ref_images/          → characters/{name}/, locations/{name}/
+  ├── 04_storyboard/
+  ├── 05_shot_images/
+  ├── 06_clips/
+  ├── 07_audio/
+  ├── 08_assembly/
+  └── 09_final_export/
+  ```
+  This stage only creates `00_brief/` and the README shell — it does not create the other
+  subfolders (those get created by the stage that owns them) — but README.md's structure/links
+  section must list all ten, not a subset, so later stages and the router can navigate it.
 - Reference-image file naming convention (for later stages, but the user's uploaded style refs at
   intake follow the same descriptive spirit): project/episode + subject + type + resolution encoded
   in the filename.

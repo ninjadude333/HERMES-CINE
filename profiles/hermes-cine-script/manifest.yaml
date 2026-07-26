@@ -58,6 +58,9 @@ guardrails:
     - "silently overwrite script.md with versioned filenames — must overwrite in place per convention"
     - "auto-advance to Stage 2 without explicit user confirmation of both script and character list"
     - "exceed 5 co-writer edit rounds without forcing a confirm/reject decision"
+    - "author or save skills describing its own workflow"
+      # See hermes-cine-intake/manifest.yaml for the live-validated incident this rule is based on
+      # -- applies to every narrow single-purpose HERMES-CINE stage agent, not just Stage 0.
 
 interface:
   channels: [telegram, cli]

@@ -8,7 +8,10 @@ Directives for HERMES to self-configure this agent from the package in this fold
 2. **Wire tools** from the allowlist (`filesystem_rw`, `shell_exec`, `telegram_send`, `email_send`)
    with their stated scopes. `shell_exec` is human-gated — every dispatch call must pause for owner
    approval per `guardrails.human_gate`, since it's the mechanism that actually kicks off other
-   agents' work and real generation cost.
+   agents' work and real generation cost. **Disable the `skills` toolset entirely** — set
+   `agent.disabled_toolsets: [skills]` in `config.yaml` as a real YAML list (not a quoted string —
+   see hermes-cine-intake/SETUP.md for the live incident where a string-literal value silently
+   failed to disable anything).
 3. **Install guardrails:** human gate, session token budget (50,000 — this agent's job is small,
    frequent, cheap calls, not long generation), secrets-by-reference resolution from env/SSM.
    Enforce `blocked_actions` as hard denials — particularly the "advance on exit code alone" and

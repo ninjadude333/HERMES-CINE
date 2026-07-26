@@ -9,6 +9,12 @@ Directives for HERMES to self-configure this agent from the package in this fold
 2. **Wire tools** from the allowlist in `manifest.yaml` (`filesystem_rw`, `image_input`,
    `web_search`, `read_prior_project`) with their stated scopes. Attach the human gate to any tool
    call matching `guardrails.human_gate.fires_on` (state-changing, external call, shell, write).
+   **Disable the `skills` toolset entirely** — set `agent.disabled_toolsets: [skills]` in
+   `config.yaml` (as a real YAML list, not a quoted string — `hermes config set` writes a string
+   literal if given `'["skills"]'` on the command line, which silently fails to disable anything;
+   edit config.yaml directly). This agent has no legitimate use for `skill_manage`/`skill_view`/
+   `skills_list` — validated live that it will otherwise autonomously author a skill documenting
+   its own workflow and get the folder structure wrong relative to SOUL.md.
 3. **Install guardrails:** human gate, session token budget (100,000), secrets-by-reference
    resolution from env/SSM. Enforce `blocked_actions` from `manifest.yaml` as hard denials, not
    soft preferences.

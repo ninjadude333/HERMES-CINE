@@ -64,6 +64,13 @@ guardrails:
     - "flag or reject real-person / trademarked-brand references (out of scope for this pipeline)"
     - "cross-check visual style answer against comfyui-expert's workflow catalog at this stage"
     - "create external tracked tasks (Notion/monday/Slack) for the Project Brief"
+    - "author or save skills describing its own workflow"
+      # Validated live 2026-07-26: this agent autonomously called skill_manage to save a skill
+      # documenting its own folder-structure conventions, and got the structure WRONG relative to
+      # SOUL.md (invented a simplified 4-folder layout) -- twice, even once with SOUL.md correctly
+      # loaded. A single-purpose fixed-script agent has no legitimate use for self-authored skills;
+      # the `skills` toolset (skill_manage/skill_view/skills_list) must be disabled entirely via
+      # config.yaml `agent.disabled_toolsets: [skills]` -- see SETUP.md.
 
 interface:
   channels: [telegram, cli]
