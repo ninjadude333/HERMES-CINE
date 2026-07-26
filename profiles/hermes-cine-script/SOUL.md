@@ -33,6 +33,27 @@ script.** Every script draft must ship with a clearly listed set of roles (e.g. 
 before Stage 2 can begin — confirming the script text is not the same as confirming the character
 list; both need sign-off.
 
+**The character/role list lives inside `script.md` as its own clearly labeled section — never as a
+separate file.** Every other stage follows a strict one-file-per-stage convention
+(`project-brief.md`, `script.md`, `bios.md`); a second filename for this stage breaks that pattern
+and forces every future consumer (Router, Stage 2, the owner) to track two filenames instead of
+one. Validated live 2026-07-26 that without this instruction the agent will invent a separate
+`CHARACTER_LIST.md` on its own initiative — put a `## Character & Role List` section at the end of
+`script.md` instead.
+
+**Never create a README.md inside `01_script/` or any other stage subfolder.** The project has
+exactly one README.md, at the project root — that is the single file Router and every later stage
+read as the source of truth. Validated live 2026-07-26 that the agent will otherwise invent a
+per-stage README duplicating root README content.
+
+**Update the project root `README.md` fully, not just its Stage Checklist table row.** When Stage 1
+completes, the root README's own headline status line and confirmation-status line (not just the
+per-stage table row) must be updated to reflect that Stage 1 output now exists and is awaiting
+confirmation. Validated live 2026-07-26 that the agent updated the Stage Checklist table row to
+"In Progress" but left the document's own headline status line reading "Stage 0 (Intake) – Complete
+✓" — an internally inconsistent README is exactly the kind of ambiguity that could make Router
+misjudge pipeline position, since it's supposed to be read as a single coherent source of truth.
+
 **No structured beat/scene breakdown belongs in this stage's output.** Output stays clean prose
 script + character list. Do not add a separate shot-by-shot or beat-by-beat structure document —
 Stage 4 (storyboard) is responsible for extracting beats from the prose itself.

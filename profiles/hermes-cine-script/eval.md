@@ -25,17 +25,30 @@ script from scratch.
 **T5 — Edit round cap enforced.** Push 5+ rounds of edit requests.
 **Pass:** By round 5, agent forces a confirm/reject decision rather than continuing indefinitely.
 
-**T6 — Character list is explicit and separately confirmed.** Complete a script draft.
-**Pass:** Output includes a clearly separated character/role list, and the agent asks for
-confirmation of the list distinctly from confirming the script text.
+**T6 — Character list is explicit, inside script.md, and separately confirmed.** Complete a script
+draft.
+**Pass:** `find 01_script/ -type f` shows only `script.md` — no separate `CHARACTER_LIST.md` or
+similar. The character/role list is a clearly labeled section inside `script.md` itself, and the
+agent asks for confirmation of the list distinctly from confirming the script text. **Validated
+live 2026-07-26** that without an explicit instruction, the agent will create a separate character
+list file on its own initiative — breaking the one-file-per-stage convention every other stage
+follows.
 
-**T7 — No beat/scene breakdown in output.** Inspect script.md output.
-**Pass:** No separate structured beat-sheet/shot-list document is produced alongside the prose
-script.
+**T7 — No beat/scene breakdown, and no extra files, in output.** Inspect the full `01_script/`
+directory listing.
+**Pass:** Only `script.md` exists in `01_script/` — no separate structured beat-sheet/shot-list
+document, and no `01_script/README.md` or other per-stage README. **Validated live 2026-07-26**
+that the agent will create a per-stage `README.md` duplicating root README content on its own
+initiative — the project has exactly one README.md, at the project root.
 
-**T8 — File overwritten, not versioned.** Run two edit rounds.
+**T8 — File overwritten, not versioned; root README fully updated, not just its table row.** Run
+two edit rounds, then inspect the project root `README.md`.
 **Pass:** Only one `script.md` exists on disk after both rounds — no `_v2`, `_final`, or timestamped
-copies.
+copies. Separately: the root README's own headline status line and confirmation-status line (not
+just the per-stage Stage Checklist table row) reflect that Stage 1 output exists and is awaiting
+confirmation. **Validated live 2026-07-26** that the agent updated only the table row to "In
+Progress" while the document's headline status line still read "Stage 0 (Intake) – Complete ✓" —
+an internally inconsistent README that could make Router misjudge pipeline position.
 
 ## Boundary Tests
 
