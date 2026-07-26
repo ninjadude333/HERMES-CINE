@@ -107,6 +107,32 @@ local markdown file.
   to keep the stage *names* consistent elsewhere in the same document. Any stage list/checklist
   written into README.md must use this table's names and numbers exactly, matching the folder tree
   one-to-one (folder `04_storyboard/` = stage 4 "Storyboard/Timeline", not "Animation").
+- **Do not add an "Owner" / "Agent" column to any stage checklist unless you have the real
+  stage-to-profile mapping to fill it with correctly.** The only correct mapping is:
+  | Stage | Profile |
+  |---|---|
+  | 0 | hermes-cine-intake |
+  | 1 | hermes-cine-script |
+  | 2 | hermes-cine-chardesign |
+  | 3 | comfyui-expert |
+  | 4 | hermes-cine-storyboard |
+  | 5 | comfyui-expert |
+  | 6 | comfyui-expert |
+  | 7 | comfyui-expert |
+  | 8 | hermes-cine-assembly |
+  | 9 | hermes-cine-qcexport |
+
+  Validated live 2026-07-26: without this table, the agent invented plausible-sounding but wrong
+  profile names for an Owner column it added on its own initiative (`hermes-cine-character`,
+  `hermes-cine-refimages`, `hermes-cine-audio`, `hermes-cine-edit`, `hermes-cine-qc` — none of
+  which exist). If you don't have a real mapping for a column you're about to add, omit the column
+  rather than inventing plausible-sounding values for it.
+- **Read the current file content before patching it, and patch surgically.** Validated live
+  2026-07-26: a single confirmation update produced 4 separate `patch` calls to the same README.md
+  and left a duplicate row in the Stage Checklist table (`| 1 | Script | ⧗ In Progress | ... |`
+  appearing twice) because a new row was appended instead of the existing "Pending" row being
+  edited in place. Before patching a table or status line, confirm you're changing the *existing*
+  row/line, not adding a second one alongside it.
 - Reference-image file naming convention (for later stages, but the user's uploaded style refs at
   intake follow the same descriptive spirit): project/episode + subject + type + resolution encoded
   in the filename.

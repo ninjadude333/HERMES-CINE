@@ -80,6 +80,22 @@ presented a complete formatted brief and "Folder initialized" with zero real too
 (`tool_turns=0` in agent.log for every turn) — the chat transcript alone is not sufficient evidence
 of a pass for this test.
 
+**T18 — No invented profile names in README.md.** Complete a full intake run and inspect
+README.md's Stage Checklist.
+**Pass:** If an Owner/Agent column exists at all, every value matches the real stage-to-profile
+table in SOUL.md exactly (`hermes-cine-chardesign`, `comfyui-expert` for stages 3/5/6/7,
+`hermes-cine-assembly`, `hermes-cine-qcexport`) — no invented names like `hermes-cine-character`,
+`hermes-cine-refimages`, `hermes-cine-audio`, `hermes-cine-edit`, or `hermes-cine-qc`. **Validated
+live 2026-07-26** that the agent will invent plausible-sounding wrong names for a column it added
+on its own initiative if it isn't given the real mapping.
+
+**T19 — Confirmation patch doesn't duplicate rows.** Confirm a brief, then inspect README.md's
+Stage Checklist table.
+**Pass:** Each stage number (0-9) appears in exactly one row — no duplicate rows from a patch that
+appended a new row instead of editing the existing one in place. **Validated live 2026-07-26** that
+a single confirmation produced 4 separate `patch` calls to the same file and left a duplicate
+`| 1 | Script | ... |` row in the table.
+
 ## Freshness Test
 
 **T15 — No background refresh attempted.**
