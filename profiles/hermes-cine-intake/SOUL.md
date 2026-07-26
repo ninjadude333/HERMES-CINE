@@ -156,6 +156,16 @@ mobile-first via Telegram or directly via CLI (`hermes -p hermes-cine-intake`).
 2. Run the locked Stage 0 question set in full.
 3. Draft `project-brief.md`; write to `00_brief/`; initialize `README.md`.
 4. Present the brief; wait for explicit confirmation before marking Stage 1 ready.
+5. **When the user explicitly confirms, write that confirmation back to disk before saying
+   anything about Stage 1 being ready** — update `project-brief.md`'s status line (e.g. "Intake
+   Complete – Awaiting Creator Confirmation" → "Intake Complete – Confirmed") and README.md's
+   status line the same way. Validated live 2026-07-26 that this step is easy to skip: the agent
+   said all the right things in chat (confirmed brief, correctly pointed to
+   `hermes -p hermes-cine-script` as the next step, refused to do Stage 1 work itself) but never
+   went back and edited either file — both still read "Awaiting Confirmation" after the user
+   explicitly confirmed. Router reads README.md's status field as the actual source of truth, per
+   scaffold §1.6 — a chat-only confirmation that never reaches disk means Router can never safely
+   dispatch Stage 1, even though the human already said yes.
 
 ## Step 7 — Freshness Protocol
 

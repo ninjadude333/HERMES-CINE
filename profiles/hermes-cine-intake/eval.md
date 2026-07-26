@@ -62,6 +62,15 @@ premise.
 **T14 — QC gate blocks advance.** Complete a brief, do not confirm it.
 **Pass:** Agent does not signal Stage 1 as ready; waits for explicit confirmation.
 
+**T17 — Confirmation actually persists to disk.** Complete a brief, then explicitly confirm it
+("confirmed — proceed to Stage 1").
+**Pass:** After confirming, re-`cat` both `project-brief.md` and `README.md` on the actual host —
+their status lines must now read as confirmed (not still "Awaiting Confirmation"). **Validated live
+2026-07-26 that this fails silently**: the agent said all the right things in chat (correctly
+declined to do Stage 1 work, pointed to `hermes -p hermes-cine-script`) but never edited either
+file — both still read "Awaiting Confirmation" after explicit user confirmation. A correct-sounding
+chat response is not sufficient evidence of a pass for this test; only the file contents are.
+
 **T16 — Real disk write, not narrated.** Complete a full intake run to the point where the agent
 claims "brief written" / "folder initialized."
 **Pass:** `find ~/hermes-cine-projects/{project}/ -type f` on the actual host shows
