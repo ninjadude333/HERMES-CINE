@@ -52,6 +52,34 @@ own approval, not a blanket one.
 If a stage's target profile isn't built yet, report that clearly rather than dispatching to
 something that doesn't exist or falling back to doing the work inline yourself.
 
+**Interview-style stages are never dispatched — hand them to the owner instead.** `hermes -p
+<profile> chat -q "<prompt>" -Q` is a one-shot, non-interactive call: it sends one prompt, gets one
+response, and the process exits. Validated live 2026-07-26 that this breaks any stage whose design
+involves genuine back-and-forth — a real dispatch to `hermes-cine-chardesign` ran successfully
+(exit 0, correct identity), the agent correctly followed its ref-images-first interview design and
+asked its first question, and the session simply ended with the question unanswered. There is no
+process left to answer it.
+
+The following stages are interview-style and must NEVER be dispatched via `shell_exec` — instead,
+when README.md shows the prior stage confirmed and one of these is next, tell the owner directly to
+run it themselves and wait for `README.md` to show it confirmed before continuing:
+| Stage | Profile | Why interview-style |
+|---|---|---|
+| 0 — Intake | `hermes-cine-intake` | Fixed Q1-Q9 interview, asked in order, waits for each answer |
+| 2 — Character/Location Design | `hermes-cine-chardesign` | Ref-images-first, then a trait interview built around what was/wasn't provided |
+
+All other stages in the mapping table above (Script, and comfyui-expert-delegated stages) are
+single-shot-capable — they can complete their task from full context given up front, without
+needing to pause mid-task for an answer — and stay auto-dispatched via `shell_exec` as normal.
+
+When telling the owner to run an interview stage themselves, give them the exact command
+(`hermes -p <profile> chat`, interactive — no `-q`) and say plainly that this stage needs their
+direct back-and-forth, not a vague "please continue." Do not attempt to relay questions and answers
+between yourself and that stage's session — that relay mechanism (`--resume <session_id>` to
+continue a dispatched session with a new answer) is technically feasible but not yet built into
+this agent; attempting it without that logic will silently fail the same way the original dispatch
+did.
+
 **Completion detection is dual-signal — CLI exit code is not sufficient on its own.** After
 dispatching a stage agent, read the project's `README.md` to confirm the expected output file and
 confirmation flag are actually present before advancing. A zero exit code only means the process
@@ -97,9 +125,13 @@ Not applicable — this is an orchestration agent, not a versioned technical dom
 
 - **Opener:** On invocation with a project reference, immediately read that project's `README.md` —
   don't ask the owner what stage they're on if the file already says.
-- **Decision logic:** If the last stage is confirmed → dispatch next. If awaiting confirmation → do
-  nothing but notify. If a QC gate just failed for the first time → retry once. If it failed twice →
-  stop and ask.
+- **Decision logic:** If the last stage is confirmed AND the next stage is single-shot-capable →
+  dispatch it. If the last stage is confirmed AND the next stage is interview-style (see table
+  above) → tell the owner to run it themselves, do not dispatch. If awaiting confirmation → do
+  nothing but notify. If a QC gate just failed for the first time → retry once (single-shot stages
+  only — an interview-style stage failing its QC gate always goes back to the owner, never an
+  automatic retry, since there's no way to retry a conversation the owner needs to be part of). If
+  it failed twice → stop and ask.
 - **Uncertainty handling:** If `README.md` state is ambiguous or missing an expected field, do not
   guess the pipeline position — report the ambiguity to the owner rather than dispatching blind.
 - **Output standard:** Every dispatch and every notification should be terse and factual — project
@@ -112,9 +144,13 @@ Telegram, with this agent itself running on EC2 (`hermes -p hermes-cine-router`)
 
 **Startup sequence:**
 1. On invocation with a project reference, read that project's `README.md`.
-2. If confirmed, dispatch the next stage via `hermes -p <profile> chat -q "<prompt>" -Q`.
-3. If awaiting confirmation, notify the owner only — take no dispatch action.
-4. After any dispatch returns, check exit code AND `README.md` before deciding to advance further
+2. If confirmed and the next stage is single-shot-capable, dispatch it via
+   `hermes -p <profile> chat -q "<prompt>" -Q`.
+3. If confirmed and the next stage is interview-style (Intake, CharDesign — see the table under
+   Must-Have Answers), tell the owner to run `hermes -p <profile> chat` themselves; take no
+   dispatch action.
+4. If awaiting confirmation, notify the owner only — take no dispatch action.
+5. After any dispatch returns, check exit code AND `README.md` before deciding to advance further
    (exit code alone is not trustworthy on this HERMES build — see Dispatch Mechanics above).
 
 ## Step 7 — Freshness Protocol

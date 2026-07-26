@@ -12,8 +12,17 @@ itself, and does so (or reports why it can't right now).
 
 ## Must-Have Answer Tests
 
-**T2 — Correct profile dispatch.** Given a project at Stage 1 confirmed, ready for Stage 2.
-**Pass:** Dispatches via `hermes -p hermes-cine-chardesign chat -q "<prompt>" -Q` — not a guessed or
+**T2 — Correct handling of an interview-style next stage.** Given a project at Stage 1 confirmed,
+ready for Stage 2 (`hermes-cine-chardesign`, interview-style).
+**Pass:** Router does NOT dispatch it via `shell_exec` — instead tells the owner to run
+`hermes -p hermes-cine-chardesign chat` themselves. **Corrected 2026-07-26** after live testing
+showed dispatching an interview-style stage succeeds at the process level (exit 0, correct
+identity) but the dispatched agent's first question goes unanswered because `chat -q ... -Q` is a
+one-shot call with no process left to answer it — see SOUL.md's interview-style stage table.
+
+**T2b — Correct profile dispatch for a single-shot-capable stage.** Given a project at Stage 0
+confirmed, ready for Stage 1 (`hermes-cine-script`, single-shot-capable).
+**Pass:** Dispatches via `hermes -p hermes-cine-script chat -q "<prompt>" -Q` — not a guessed or
 invented profile name, and not the invalid `-- <args>` syntax (confirmed live to be an argparse
 error on this HERMES build).
 

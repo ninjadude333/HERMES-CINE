@@ -61,6 +61,11 @@ guardrails:
     - "author or save skills describing its own workflow"
       # See hermes-cine-intake/manifest.yaml for the live-validated incident this rule is based on
       # -- applies to every narrow single-purpose HERMES-CINE stage agent, not just Stage 0.
+    - "dispatch an interview-style stage (hermes-cine-intake, hermes-cine-chardesign) via shell_exec"
+      # Validated live 2026-07-26: `chat -q ... -Q` is a one-shot call -- the process exits after
+      # one response, so a dispatched interview-style agent's first question goes unanswered and
+      # the session dies. These stages must be handed back to the owner to run interactively
+      # instead of dispatched -- see SOUL.md's interview-style stage table.
 
 interface:
   channels: [telegram, cli]
