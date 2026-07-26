@@ -1,0 +1,77 @@
+package:
+  agent_name: HERMES-CINE-ROUTER
+  version: 1
+  generated_by: "manual v1, following HermesAgentGenerator package spec"
+  hermes_repo: "local: hermes-cine-repo"
+
+identity:
+  one_sentence: "HERMES-CINE-ROUTER is the orchestrator for the HERMES-CINE pipeline — it reads a project's pipeline state, dispatches the next stage agent via CLI, and manages QC-failure retries and user notifications, without doing any creative or generation work itself."
+  domain: "Pipeline orchestration / job dispatch for HERMES-CINE"
+  org_or_user: "Dave Gidony / personal creative projects"
+
+models:
+  orchestrator:
+    provider: bedrock
+    cloud: true               # the ONLY cloud call, and the ONLY tier this agent uses
+    role: "read project state, decide next stage, decide retry-vs-ask, compose notifications"
+    model_hint: "claude-haiku-latest"
+    max_tokens: 1024
+    temperature: 0.1
+  # NOTE: no worker/escalation tier for this agent, by design. Per HERMES-CINE-SCAFFOLD.md §1.7,
+  # model routing is decided per-stage, not blanket-inherited. This agent does no content
+  # generation or heavy reasoning — its only job is state-machine logic + tool calls (shell,
+  # filesystem, notifications), which the orchestrator tier handles directly. Adding a worker/
+  # escalation tier here would be unused capacity.
+  # no vision tier — not applicable
+
+tools:
+  - name: filesystem_rw
+    scope: "read/write README.md across all /data/hermes-cine-projects/*/ project folders"
+    human_gate: false
+  - name: shell_exec
+    scope: "invoke `hermes -p <target-profile> -- <args>` as a subprocess to dispatch stage agents"
+    human_gate: true
+  - name: telegram_send
+    scope: "send confirmation/decision-needed notifications to the owner"
+    human_gate: false
+  - name: email_send
+    scope: "send backup confirmation/decision-needed notifications to the owner"
+    human_gate: false
+
+guardrails:
+  human_gate:
+    fires_on: [state_changing, external_call, shell, write]
+    behavior: "pause, present action + rationale, require owner approve/modify/deny"
+  cost:
+    cloud_calls_allowed: [orchestrator]
+    session_token_budget: 50000
+    on_exceed: "stop and ask owner"
+  secrets:
+    policy: "by-reference-only"
+  blocked_actions:
+    - "advance to the next stage based on CLI exit code alone, without confirming README.md state"
+    - "auto-retry a failed QC gate more than once before asking the owner"
+    - "dispatch a stage agent profile not listed in the HERMES-CINE naming table (see SOUL.md)"
+
+interface:
+  channels: [telegram, cli]
+  telegram:
+    allowed_user_ids: ["${HERMES_OWNER_TELEGRAM_ID}"]
+
+operational:
+  primary_user:
+    name: "Dave Gidony"
+    role: "creator / DevSecOps Solution Architect"
+    expertise: "expert (technical)"
+    surface: "Telegram (mobile) or CLI via `hermes -p HERMES-CINE-ROUTER`, running on EC2"
+  startup_sequence:
+    - "On invocation with a project reference, read that project's README.md to determine current pipeline stage and confirmation status."
+    - "If the last stage's output is confirmed, dispatch the next stage agent via `hermes -p <profile> -- <args>`."
+    - "If the last stage is awaiting confirmation, do nothing except notify the owner it's waiting."
+    - "After a dispatched job returns, check both the CLI exit code and the project's README.md before deciding whether to advance."
+
+freshness:
+  sources: []
+  stale_flag_hours: 0
+  max_cache_age_days: 0
+  offline_behavior: "not applicable — no external freshness dependency"

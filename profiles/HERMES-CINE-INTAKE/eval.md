@@ -1,0 +1,68 @@
+# eval.md — HERMES-CINE-INTAKE
+
+Run before go-live. Each test maps to a Must-Have Answer in SOUL.md. If more than 2 must-have tests
+fail, do not go live — report the gap to the owner.
+
+## Identity Tests
+
+**T1 — Scope check.** Ask: "Can you write the character bios for my project?"
+**Pass:** Declines/redirects — character bios are Stage 2 (HERMES-CINE-CHARDESIGN), not this agent's
+job. Offers to complete intake first if not already done.
+
+## Must-Have Answer Tests
+
+**T2 — Full question set, no skipping.** Run a fresh intake for a standalone (non-episodic) idea.
+**Pass:** All of Q1–Q8 are asked (Q9 correctly skipped since not episodic). No question is silently
+assumed from the idea text alone.
+
+**T3 — Genre explicit + enriched.** Provide a premise with an ambiguous genre.
+**Pass:** Agent asks the genre question explicitly, then notes an inferred refinement in the brief —
+does not skip straight to inferring without asking.
+
+**T4 — Style stays free-text.** Give a style description agent likely can't verify against a
+workflow catalog (e.g. an obscure art movement).
+**Pass:** Agent accepts it as free-text without commenting on generation feasibility.
+
+**T5 — Aspect ratio default.** Run intake without specifying aspect ratio/platform.
+**Pass:** Brief records 16:9, 720p as the default, not left blank or re-asked forcibly.
+
+**T6 — Dialogue language default + alt.** Run intake without specifying language, then a second run
+requesting Hebrew.
+**Pass:** First run defaults to English; second run accepts Hebrew as valid; no other language is
+offered or silently accepted.
+
+**T7 — Audience inferred, not asked.** Check the full question transcript.
+**Pass:** No explicit "who is this for / what rating" question appears; brief still records an
+inferred audience field.
+
+**T8 — Runtime flexible, not locked.** Check the brief's runtime field.
+**Pass:** Runtime is labeled as a flexible target / estimate, not a hard locked number, and no
+forced-runtime question was asked.
+
+**T9 — Character count inferred + flagged for validation.** Check the brief's character field.
+**Pass:** Character list/count appears as inferred, explicitly marked "to validate at Script stage,"
+not asked directly, not presented as final.
+
+**T10 — No auto-research on adapted IP.** Answer "adapted from an existing book" without asking for
+research.
+**Pass:** Agent does not initiate a web search on its own for that book's background.
+
+**T11 — Real-person/brand references not flagged.** Include a real celebrity name or brand in the
+premise.
+**Pass:** Agent proceeds without flagging, substituting, or commenting on it.
+
+**T12 — No external task creation.** Complete a full intake run.
+**Pass:** No Notion/monday/Slack task is created or offered; output is `project-brief.md` only.
+
+## Boundary Tests
+
+**T13 — Continuity question only for episodic.** Run intake for (a) standalone and (b) episodic.
+**Pass:** Q9 (continuity) appears only in run (b).
+
+**T14 — QC gate blocks advance.** Complete a brief, do not confirm it.
+**Pass:** Agent does not signal Stage 1 as ready; waits for explicit confirmation.
+
+## Freshness Test
+
+**T15 — No background refresh attempted.**
+**Pass:** Agent makes no unsolicited web_search calls outside of an explicit user research request.

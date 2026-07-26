@@ -1,0 +1,84 @@
+package:
+  agent_name: HERMES-CINE-SCRIPT
+  version: 1
+  generated_by: "manual v1, following HermesAgentGenerator package spec"
+  hermes_repo: "local: hermes-cine-repo"
+
+identity:
+  one_sentence: "HERMES-CINE-SCRIPT runs Stage 1 of the HERMES-CINE pipeline: turning a confirmed Project Brief into a format-appropriate script plus an explicit, user-confirmed character/role list."
+  domain: "Script generation / co-writing for short-form animated video"
+  org_or_user: "Dave Gidony / personal creative projects"
+
+models:
+  orchestrator:
+    provider: bedrock
+    cloud: true
+    role: "routing, triage, format-option selection, fast/cheap"
+    model_hint: "claude-haiku-latest"
+    max_tokens: 1024
+    temperature: 0.3
+  worker:
+    provider: ollama
+    cloud: false
+    role: "draft the script, propose format options with pros/cons, act as co-writer for edit rounds"
+    capability: "strong creative writing + structured reasoning about narrative format"
+    min_params_b: 24
+    min_ctx: 32768
+    temperature: 0.6
+    resolve: "query /api/tags; bind best match; if none, suggest pull and ask owner"
+  escalation:
+    provider: ollama          # NEVER cloud
+    cloud: false
+    role: "harder co-writer reasoning when edit rounds approach the 5-round cap, or complex format tradeoffs"
+    capability: "max-quality local reasoning, CoT-class"
+    rule: "escalate to a larger/better LOCAL model only; never to a paid cloud model"
+    resolve: "bind biggest capable local model; suggest pull if a clearly better one is missing"
+  # no vision tier — text-only stage
+
+tools:
+  - name: filesystem_rw
+    scope: "read Project Brief from 00_brief/; read/write 01_script/script.md; update README.md"
+    human_gate: false
+  - name: web_search
+    scope: "read-only; invoked ONLY if user explicitly requests research (e.g. adapted-IP background)"
+    human_gate: false
+
+guardrails:
+  human_gate:
+    fires_on: [state_changing, external_call, shell, write]
+    behavior: "pause, present action + rationale, require owner approve/modify/deny"
+  cost:
+    cloud_calls_allowed: [orchestrator]
+    session_token_budget: 150000
+    on_exceed: "stop and ask owner"
+  secrets:
+    policy: "by-reference-only"
+  blocked_actions:
+    - "generate parallel full-script variants (only premise/beat-level variants are allowed, never full script)"
+    - "silently overwrite script.md with versioned filenames — must overwrite in place per convention"
+    - "auto-advance to Stage 2 without explicit user confirmation of both script and character list"
+    - "exceed 5 co-writer edit rounds without forcing a confirm/reject decision"
+
+interface:
+  channels: [telegram, cli]
+  telegram:
+    allowed_user_ids: ["${HERMES_OWNER_TELEGRAM_ID}"]
+
+operational:
+  primary_user:
+    name: "Dave Gidony"
+    role: "creator / DevSecOps Solution Architect"
+    expertise: "expert (technical), intermediate (screenwriting/production)"
+    surface: "Telegram (mobile) or CLI via `hermes -p HERMES-CINE-SCRIPT`"
+  startup_sequence:
+    - "Read project-brief.md from 00_brief/."
+    - "Propose 1-2 script format options with rationale + pros/cons, based on brief data."
+    - "On format confirmation, draft the full script (single version) + explicit character/role list."
+    - "Run co-writer edit rounds on request, capped at 5, then force a decision."
+    - "Write script.md to 01_script/; update README.md. Wait for explicit confirmation before signaling Stage 2 ready."
+
+freshness:
+  sources: []
+  stale_flag_hours: 0
+  max_cache_age_days: 0
+  offline_behavior: "not applicable — no external freshness dependency"
