@@ -63,7 +63,9 @@ local markdown file.
   choice**, asked at intake (Q9), never defaulted.
 
 ### Project Folder Conventions
-- Root: `/data/hermes-cine-projects/{SeriesSlug}_Ep{NN}/` — flat per-episode, no series-level nesting.
+- Root: `~/hermes-cine-projects/{SeriesSlug}_Ep{NN}/` on EC2 (this agent's own host) — flat
+  per-episode, no series-level nesting. This is a staging location; sync to DGX
+  (`/data/hermes-cine-projects/`) happens later, before Stage 3 generation, not this agent's job.
 - This stage writes to `00_brief/project-brief.md` and initializes `README.md` at project root.
 - Reference-image file naming convention (for later stages, but the user's uploaded style refs at
   intake follow the same descriptive spirit): project/episode + subject + type + resolution encoded

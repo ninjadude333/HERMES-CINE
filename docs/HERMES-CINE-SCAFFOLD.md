@@ -27,11 +27,31 @@
 | QC | Automatic QC gate + user confirmation **after every stage** |
 | Delegation | This agent does NOT reimplement ComfyUI execution — it delegates generation calls to the existing comfyui-expert agent/workflow catalog |
 
-## 1.5 Project Folder Structure (LOCKED)
+## 1.5 Project Folder Structure (LOCKED, revised 2026-07-26 after live host validation)
 
-**Location:** DGX local disk (same host as ComfyUI/Ollama — avoids cross-host sync overhead)
+**Location — two-host design, corrected from the original single-host assumption:**
+Live testing on 2026-07-26 found all HERMES-CINE stage agents (Intake/Script/Router) actually run
+on **EC2** as user `ubuntu` — not on DGX as originally assumed. DGX is reachable from EC2 only via
+the existing reverse SSH tunnel `comfyui-expert` already uses (`ssh -i ~/.ssh/id_dgx_tunnel -p 2222
+davidg@localhost`), where the DGX user is `davidg`, not `ubuntu`. `/data` is a real 7TB ext4 mount
+on DGX (owned by `davidg`) — it does not exist at all on EC2.
 
-**Root convention:** `/data/hermes-cine-projects/{SeriesSlug}_Ep{NN}/`
+**Revised flow:**
+- **Text-only stages (Intake, Script, CharDesign) stage locally on EC2**, under
+  `~/hermes-cine-projects/{SeriesSlug}_Ep{NN}/` (ubuntu's home dir) — this is where these agents
+  actually run, so no cross-host round-trip is needed for pure text work.
+- **Before Stage 3 (ref image generation) begins**, the project folder is synced from EC2 to DGX's
+  `/data/hermes-cine-projects/{SeriesSlug}_Ep{NN}/` (owned by `davidg`) over the same tunnel, e.g.
+  `rsync -e "ssh -i ~/.ssh/id_dgx_tunnel -p 2222" -av ~/hermes-cine-projects/{proj}/ davidg@localhost:/data/hermes-cine-projects/{proj}/`.
+  This preserves the original rationale (avoid cross-host sync overhead *during* generation, the
+  expensive part) while fixing the host assumption.
+- **DGX is canonical from Stage 3 onward** — comfyui-expert and ComfyUI read/write directly there,
+  no further EC2 round-trips needed mid-generation.
+- If a later stage needs to run back on EC2 (not currently anticipated), sync direction would need
+  to reverse — not yet designed, flag if this becomes needed.
+
+**Root convention (per host):** `{host-root}/hermes-cine-projects/{SeriesSlug}_Ep{NN}/` where
+`{host-root}` is `~` on EC2 (staging) or `/data` on DGX (canonical post-Stage-3).
 - Flat per-episode folders — no series-level nesting; series grouping happens via the naming convention itself (e.g. `AlienDogTwins_Ep01`, `AlienDogTwins_Ep02`)
 
 **Per-episode subfolder structure:**
@@ -72,7 +92,12 @@
 
 Agent asks which approach per-project rather than defaulting to one.
 
-**Tool/Skill implication:** This adds a requirement across stages — the agent (or its delegated comfyui-expert calls) needs **filesystem read/write on the DGX host** to create these folders, copy generated assets in, and maintain README.md — not just abstract "file write" as previously listed per-stage.
+**Tool/Skill implication:** Text stages (Intake/Script/CharDesign) need **filesystem read/write on
+EC2 local disk** (`~/hermes-cine-projects/`) to create these folders, write stage output, and
+maintain README.md. Generation stages (comfyui-expert delegation) need **filesystem read/write on
+the DGX host** (`/data/hermes-cine-projects/`, via the existing tunnel) to receive the synced
+project folder, write generated assets into it, and update README.md there. Not just abstract "file
+write" as previously listed per-stage — the host differs by stage.
 
 **Reference image file naming (LOCKED):** Descriptive, not generic — filenames must encode project/episode, character-or-location, image type, and (for characters with an expression range) the expression, so files are self-identifying against the script/bios without opening them:
 

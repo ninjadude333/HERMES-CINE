@@ -26,7 +26,7 @@ models:
 
 tools:
   - name: filesystem_rw
-    scope: "read/write README.md across all /data/hermes-cine-projects/*/ project folders"
+    scope: "read/write README.md across all ~/hermes-cine-projects/*/ project folders (EC2 local staging — text stages live here; DGX sync happens at Stage 3, not this agent's job)"
     human_gate: false
   - name: shell_exec
     scope: "invoke `hermes -p <target-profile> chat -q \"<prompt>\" -Q` as a subprocess to dispatch stage agents"

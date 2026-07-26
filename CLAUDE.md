@@ -55,7 +55,9 @@ the EC2 host and running a real Router → Intake → Script dispatch chain end 
 
 ## Conventions to follow without re-deriving
 
-- Project folders: `/data/hermes-cine-projects/{SeriesSlug}_Ep{NN}/`, flat per-episode, numbered
+- Project folders: `~/hermes-cine-projects/{SeriesSlug}_Ep{NN}/` on EC2 (text stages 0-2 stage
+  here) synced to `/data/hermes-cine-projects/{SeriesSlug}_Ep{NN}/` on DGX before Stage 3 generation
+  (revised 2026-07-26 after live host validation — see scaffold §1.5). Flat per-episode, numbered
   subfolders per stage (`00_brief/` … `09_final_export/`)
 - `README.md` per project is the pipeline-state source of truth; `script.md` / `bios.md` are
   overwritten in place, never versioned

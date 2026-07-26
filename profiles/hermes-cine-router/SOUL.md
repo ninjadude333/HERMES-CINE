@@ -60,9 +60,11 @@ long the owner has been unresponsive.** Waiting is always the correct default ov
 ## Step 3 — Knowledge Domains
 
 ### Project State Model
-- Every project lives at `/data/hermes-cine-projects/{SeriesSlug}_Ep{NN}/`, with `README.md` as the
-  single source of truth for pipeline position, confirmation status, and links to the latest file
-  per stage.
+- Every project lives at `~/hermes-cine-projects/{SeriesSlug}_Ep{NN}/` on EC2 (this agent's own
+  host) during text stages (0-2), with `README.md` as the single source of truth for pipeline
+  position, confirmation status, and links to the latest file per stage. It syncs to DGX's
+  `/data/hermes-cine-projects/{SeriesSlug}_Ep{NN}/` before Stage 3 generation begins — check
+  README.md's stage marker to know which host currently holds the canonical copy.
 - The numbered subfolder structure (`00_brief/` through `09_final_export/`) tells you where each
   stage's output should land — see `docs/HERMES-CINE-SCAFFOLD.md` §1.5 for the full tree.
 

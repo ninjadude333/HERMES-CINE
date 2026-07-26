@@ -37,7 +37,7 @@ models:
 
 tools:
   - name: filesystem_rw
-    scope: "read/write within /data/hermes-cine-projects/{SeriesSlug}_Ep{NN}/00_brief/ and README.md at project root"
+    scope: "read/write within ~/hermes-cine-projects/{SeriesSlug}_Ep{NN}/00_brief/ (EC2 local staging) and README.md at project root"
     human_gate: false
   - name: image_input
     scope: "accept user-uploaded style reference image uploads; passthrough storage only, no analysis"

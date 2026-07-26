@@ -28,5 +28,6 @@ Directives for HERMES to self-configure this agent from the package in this fold
   other HERMES profiles — it is invoked by `hermes-cine-router` via
   `hermes -p hermes-cine-intake chat -q "<prompt>" -Q` and hands off by writing `project-brief.md` +
   `README.md` for the router to detect.
-- If the project folder root (`/data/hermes-cine-projects/`) doesn't exist yet on this host, create
-  it on first run rather than failing.
+- This agent runs on EC2, not DGX. If the project folder root (`~/hermes-cine-projects/`) doesn't
+  exist yet on this host, create it on first run rather than failing. Sync to DGX
+  (`/data/hermes-cine-projects/`) happens later, before Stage 3 generation — not this agent's job.
