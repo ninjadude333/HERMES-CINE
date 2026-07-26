@@ -2,7 +2,7 @@
 
 Multi-agent HERMES pipeline for generating animated clips/short episodes — idea → final cut.
 
-**Status: design/skeleton phase.** See `docs/HERMES-CINE-SCAFFOLD.md` for the full architecture — pipeline stages, folder structure, multi-agent routing, model policy, and per-stage tool/skill requirements. Nothing here is a working agent yet; profiles below are placeholders until each stage is built out into a real `manifest.yaml` + `SOUL.md` package per your existing HERMES package spec.
+**Status: early live-validation phase.** See `docs/HERMES-CINE-SCAFFOLD.md` for the full architecture — pipeline stages, folder structure, multi-agent routing, model policy, and per-stage tool/skill requirements. Stages 0, 1, 2, and the Router have real generated packages; Stages 0/1/Router have been run for real against the live HERMES instance on EC2 and had multiple real bugs found and fixed (see CLAUDE.md's "one big open architectural risk" section for the log). Stage 2 has a package but hasn't been run live yet.
 
 ## Repo layout
 
@@ -12,10 +12,10 @@ hermes-cine/
 ├── docs/
 │   └── HERMES-CINE-SCAFFOLD.md        — living design doc: architecture, stages, folder structure, routing
 ├── profiles/                          — one folder per HERMES agent profile (see naming table in scaffold §1.6)
-│   ├── hermes-cine-router/            — orchestrator: dispatches jobs via `hermes -p <profile> chat -q "..." -Q`, tracks pipeline state — REAL PACKAGE (v1)
-│   ├── hermes-cine-intake/            — Stage 0: intake interview → project-brief.md — REAL PACKAGE (v1)
-│   ├── hermes-cine-script/            — Stage 1: script generation → script.md + character list — REAL PACKAGE (v1)
-│   ├── hermes-cine-chardesign/        — Stage 2: character/location bios → bios.md (design-only, no package yet)
+│   ├── hermes-cine-router/            — orchestrator: dispatches jobs via `hermes -p <profile> chat -q "..." -Q`, tracks pipeline state — REAL PACKAGE, LIVE-TESTED
+│   ├── hermes-cine-intake/            — Stage 0: intake interview → project-brief.md — REAL PACKAGE, LIVE-TESTED
+│   ├── hermes-cine-script/            — Stage 1: script generation → script.md + character list — REAL PACKAGE, LIVE-TESTED
+│   ├── hermes-cine-chardesign/        — Stage 2: character/location bios → bios.md — REAL PACKAGE (v1), not yet live-tested
 │   ├── hermes-cine-storyboard/        — Stage 4: storyboard/shot list (not yet specced)
 │   ├── hermes-cine-assembly/          — Stage 8: edit/assembly (not yet specced)
 │   └── hermes-cine-qcexport/          — Stage 9: final QC/export (not yet specced)
@@ -31,27 +31,17 @@ hermes-cine/
 ## Current validation status
 
 See `docs/HERMES-CINE-SCAFFOLD.md` §5 for the full per-stage validation table. Short version:
-`hermes-cine-router`, `hermes-cine-intake`, and `hermes-cine-script` now have **real generated
-packages** (manifest.yaml + SOUL.md + eval.md + SETUP.md) — but none have been run through an
-actual HERMES instance yet, so tool wiring, model resolution, and eval.md pass rates are all still
-unverified. Stage 3 (via `comfyui-expert`) has real generation runs behind it and passed. Stages 0-1
-are otherwise chat-mocked only. Stage 2 and beyond are design-only, no package yet.
+
+- **hermes-cine-intake, hermes-cine-script, hermes-cine-router** are installed as real live profiles on the EC2 host (hermano.dudelabz.com) and have each been run for real, multiple times, against real project state. Every bug found during those runs is documented and fixed in the relevant SOUL.md/eval.md — see the list in CLAUDE.md.
+- **hermes-cine-router successfully ran a real dispatch subprocess** (`hermes -p hermes-cine-chardesign chat -q "..." -Q`) against a project with a genuinely confirmed Stage 1. The target profile didn't exist yet at the time, so the call returned exit 1 — Router correctly reported the gap instead of working around it. This validates the CLI dispatch mechanism itself; dispatching to a profile that exists and runs to completion is the next real test.
+- **hermes-cine-chardesign** has a real package (folds in every lesson learned from the three profiles above) but has not yet been installed or run live.
+- Stage 3 (via `comfyui-expert`) has real generation runs behind it and passed, using a hand-written test brief — not yet re-tested against real Stage 2 output.
+- Stages 4, 8, 9 are design-only placeholders, not yet specced.
 
 ## Next steps
 
-1. **Dispatch mechanism validated live (2026-07-26)** against the real HERMES CLI on
-   hermano.dudelabz.com: `hermes -p <profile>` is real and per-invocation scoped, but the working
-   non-interactive form is `hermes -p <profile> chat -q "<prompt>" -Q` — the `-- <args>` syntax from
-   earlier drafts errors out, and exit code is unreliable (always 0, even on real failures) so
-   README.md state-check is mandatory. Naming convention revised to lowercase-hyphenated repo-wide
-   to match what the real CLI forces on profile directory names. See scaffold §1.6 for full detail.
-2. **Install the three real packages as live profiles** on the EC2 host (`hermes profile create
-   hermes-cine-intake/-script/-router --no-alias --no-skills`, copy package files in, run each
-   SETUP.md) and check each passes its eval.md.
-3. **Validate the core architecture bet:** confirm `hermes-cine-router` can actually dispatch
-   `hermes-cine-intake` and `hermes-cine-script` via `hermes -p <profile> chat -q "..." -Q`
-   subprocess calls, and correctly reads README.md to decide what's next — this is the main open
-   risk in the whole design, now that the CLI syntax itself is confirmed.
-4. Generate real packages for `hermes-cine-chardesign` next (Stage 2 is already fully specced).
-5. Spec Stages 4, 8, 9 (currently placeholders).
-6. Run each stage's test plan (docs §4) against the real running profile, not just chat-mocked.
+1. **Install `hermes-cine-chardesign` as a live profile** on the EC2 host (`hermes profile create hermes-cine-chardesign --no-alias --no-skills`, copy package files in, configure Bedrock provider + `agent.disabled_toolsets: [skills]` in config.yaml — see its SETUP.md) and run it directly against the confirmed script from the current test project.
+2. **Have Router dispatch a real, complete run** — point `hermes-cine-router` at a project with Stage 1 confirmed and `hermes-cine-chardesign` actually installed, and confirm the full dispatch → run → README.md update → Router re-check loop works end to end, not just the dispatch-and-fail path already validated.
+3. Generate a real package for `hermes-cine-storyboard` next (Stage 4 needs specing first — currently a placeholder).
+4. Spec Stages 4, 8, 9 (currently placeholders).
+5. Once Stage 2 output exists for real, re-run the Stage 3 (`comfyui-expert`) handoff test using that real `bios.md` instead of the hand-written test brief in `tests/ep01-alien-dog-twins/`.

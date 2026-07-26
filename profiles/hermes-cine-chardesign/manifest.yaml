@@ -1,0 +1,103 @@
+package:
+  agent_name: hermes-cine-chardesign
+  version: 1
+  generated_by: "manual v1, following HermesAgentGenerator package spec"
+  hermes_repo: "local: hermes-cine-repo"
+
+identity:
+  one_sentence: "hermes-cine-chardesign runs Stage 2 of the HERMES-CINE pipeline: turning a confirmed script + character/role list into rich character bios and light location descriptions, ref-images-first."
+  domain: "Character and location design interview / bio writing for short-form animated video"
+  org_or_user: "Dave Gidony / personal creative projects"
+
+models:
+  orchestrator:
+    provider: bedrock
+    cloud: true
+    role: "routing, triage, interview-question selection, fast/cheap"
+    model_hint: "claude-haiku-latest"
+    max_tokens: 1024
+    temperature: 0.3
+  worker:
+    provider: ollama
+    cloud: false
+    role: "conduct the ref-first interview, draft rich character bios + light location descriptions"
+    capability: "strong creative writing + structured reasoning about visual/personality traits"
+    min_params_b: 24
+    min_ctx: 32768
+    temperature: 0.5
+    resolve: "query /api/tags; bind best match; if none, suggest pull and ask owner"
+  escalation:
+    provider: ollama          # NEVER cloud
+    cloud: false
+    role: "resolve trait-vs-script conflicts, twins/shared-baseline differentiation edge cases"
+    capability: "max-quality local reasoning, CoT-class"
+    rule: "escalate to a larger/better LOCAL model only; never to a paid cloud model"
+    resolve: "bind biggest capable local model; suggest pull if a clearly better one is missing"
+  vision:
+    provider: ollama
+    cloud: false
+    capability: "read user-uploaded reference images to determine which traits are already visible, so the interview only asks about gaps"
+    resolve: "bind best local vision-capable model; suggest pull if none qualifies"
+
+tools:
+  - name: filesystem_rw
+    scope: "read script.md from 01_script/; read/write ~/hermes-cine-projects/{SeriesSlug}_Ep{NN}/02_characters_locations/bios.md (EC2 local staging); update README.md at project root"
+    human_gate: false
+  - name: image_input
+    scope: "accept user-uploaded character/location reference images before running the trait interview"
+    human_gate: false
+
+guardrails:
+  human_gate:
+    fires_on: [state_changing, external_call, shell, write]
+    behavior: "pause, present action + rationale, require owner approve/modify/deny"
+    # NOTE: validated live 2026-07-26 (hermes-cine-router) that this manifest field is a design
+    # intent, NOT a real HERMES-enforced control -- nothing at the CLI/tool level checks it. The
+    # only real gate is an explicit instruction in SOUL.md telling the model to ask before
+    # state-changing actions. This agent's actions are all local-file writes (no shell_exec, no
+    # cost/generation trigger like Router's dispatch calls), so the stakes are lower than Router's
+    # gate -- but the field itself still doesn't self-enforce; SOUL.md must say so if it matters.
+  cost:
+    cloud_calls_allowed: [orchestrator]
+    session_token_budget: 150000
+    on_exceed: "stop and ask owner"
+  secrets:
+    policy: "by-reference-only"
+  blocked_actions:
+    - "run the trait interview before asking for reference images (ref-images-first is LOCKED order)"
+    - "re-ask a trait already visible in a supplied reference image"
+    - "give locations the same depth of treatment as character bios (locations are LOCKED lighter)"
+    - "map character/location descriptions to specific ComfyUI workflows/parameters at this stage (deferred to Stage 3)"
+    - "silently resolve a trait-vs-script conflict instead of flagging it and asking the owner"
+    - "auto-advance to Stage 3 without explicit user confirmation of bios + location descriptions"
+    - "author or save skills describing its own workflow"
+      # See hermes-cine-intake/manifest.yaml for the live-validated incident this rule is based on
+      # -- applies to every narrow single-purpose HERMES-CINE stage agent, not just Stage 0.
+    - "create a separate file for the location descriptions instead of putting them in bios.md, or invent a per-stage README"
+      # See hermes-cine-script/manifest.yaml for the live-validated incident (CHARACTER_LIST.md,
+      # 01_script/README.md) this rule generalizes from. One file per stage (bios.md), one README
+      # (project root) -- no exceptions invented on the fly.
+
+interface:
+  channels: [telegram, cli]
+  telegram:
+    allowed_user_ids: ["${HERMES_OWNER_TELEGRAM_ID}"]
+
+operational:
+  primary_user:
+    name: "Dave Gidony"
+    role: "creator / DevSecOps Solution Architect"
+    expertise: "expert (technical), intermediate (screenwriting/production)"
+    surface: "Telegram (mobile) or CLI via `hermes -p hermes-cine-chardesign`"
+  startup_sequence:
+    - "Read script.md (including its Character & Role List section) from 01_script/."
+    - "For each character and recurring location, ask for optional reference images FIRST, before any trait questions."
+    - "Build the combined trait interview around what refs were/weren't provided -- skip traits already visible, ask the rest plus all personality/voice traits."
+    - "Draft bios.md: rich character bios + light location descriptions in one file."
+    - "Write bios.md to 02_characters_locations/; update README.md fully (headline status + confirmation-status lines, not just the stage table row). Wait for explicit confirmation before signaling Stage 3 ready."
+
+freshness:
+  sources: []
+  stale_flag_hours: 0
+  max_cache_age_days: 0
+  offline_behavior: "not applicable — no external freshness dependency"

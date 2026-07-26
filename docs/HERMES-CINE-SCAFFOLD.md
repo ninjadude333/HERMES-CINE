@@ -381,9 +381,10 @@ Every column = same card template:
 
 | Stage | Design specced? | Text-flow tested? | Real tool/skill calls validated? |
 |---|---|---|---|
-| 0 — Intake | Yes | Yes (mock intake run) | No |
-| 1 — Script | Yes | Yes (mock script generated) | No |
-| 2 — Character/Location Design | Yes | Partial (ref-first logic not yet live-tested) | No |
+| 0 — Intake | Yes | Yes (mock + multiple real runs) | Yes — live on EC2, 2026-07-26. Real disk writes, correct folder/stage-name/owner tables, confirmation persists to disk. Several real bugs found and fixed along the way (see CLAUDE.md log). |
+| 1 — Script | Yes | Yes (mock + real run) | Yes — live on EC2, 2026-07-26. Real disk writes, character list correctly merged into script.md (not a separate file), root README fully updated. |
+| Router | Yes | N/A (orchestration agent) | Yes — live on EC2, 2026-07-26. Composed and ran a real `hermes -p <profile> chat -q "..." -Q` dispatch subprocess; correctly handled unconfirmed-state block and not-yet-built-target failure (exit 1) without inventing a workaround. Human-gate on `shell_exec` found to be unenforced by HERMES itself and fixed via explicit SOUL.md instruction. Not yet tested: dispatch to a profile that exists and runs to completion. |
+| 2 — Character/Location Design | Yes | No | No — real package generated (folds in every live-validated lesson from Stages 0/1/Router), not yet installed or run live. |
 | 3 — Ref Image Lock | Partial (res spec + folder conventions locked) | Yes (2 real comfyui-expert runs, images came back good) | Partial — real generation validated, but not yet through full Stage 2→3 handoff with actual bios.md |
 | 4 — Storyboard/Timeline | Not yet specced | No | No |
 | 5 — Shot Image Gen | Not yet specced | No | No |

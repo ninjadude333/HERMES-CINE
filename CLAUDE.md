@@ -27,17 +27,23 @@ one unified agent) that dispatch to each other via CLI, plus delegation to the u
 ## Current state (keep this section updated as work progresses)
 
 - **Architecture:** fully locked — see scaffold §0, §1.5, §1.6, §1.7
-- **Stages 0, 1:** fully specced AND have real generated packages (manifest.yaml + SOUL.md +
-  eval.md + SETUP.md) in `profiles/hermes-cine-intake/` and `profiles/hermes-cine-script/`
-- **Router:** fully specced AND has a real generated package in `profiles/hermes-cine-router/` —
-  notably has NO worker/escalation model tier, orchestrator (Haiku) only, by design
-- **Stage 2 (hermes-cine-chardesign):** fully specced in the scaffold, but no real package
-  generated yet
+- **Stages 0, 1, 2, Router: all four now have real generated packages** (manifest.yaml + SOUL.md +
+  eval.md + SETUP.md) in `profiles/hermes-cine-intake/`, `profiles/hermes-cine-script/`,
+  `profiles/hermes-cine-chardesign/`, `profiles/hermes-cine-router/` — Router notably has NO
+  worker/escalation model tier, orchestrator (Haiku) only, by design
+- **Stages 0, 1, Router: validated live on the real EC2 host (2026-07-26).** Multiple real chat
+  sessions run against hermano.dudelabz.com — Intake produces a correct, confirmed project;
+  Script produces a correct, confirmed script; Router successfully composed and ran a real
+  `hermes -p <profile> chat -q "..." -Q` dispatch subprocess and correctly handled both a
+  not-yet-built target (exit 1, reported cleanly) and an unconfirmed-state block. See scaffold §1.6
+  and CLAUDE.md's "one big open architectural risk" section below for the full list of real bugs
+  found and fixed along the way.
+- **Stage 2 (hermes-cine-chardesign): package generated, not yet run live.** Folds in every
+  live-validated lesson from Stages 0/1 before its first real test.
 - **Stage 3 (comfyui-expert delegation):** real generation runs completed and passed (2 test runs,
-  resolution spec corrected between v1 and v2 handoff prompts — see tests/ folder)
+  resolution spec corrected between v1 and v2 handoff prompts — see tests/ folder). Not yet tested
+  with real Stage 2 output as input (still using a hand-written test brief).
 - **Stages 4, 8, 9:** not yet specced at all — currently just placeholder profile folders
-- **Nothing has been run through a real HERMES instance yet** except the comfyui-expert Stage 3
-  test — Stages 0/1/Router are packages-on-paper only, not yet validated live
 
 ## The one big open architectural risk
 
@@ -50,8 +56,23 @@ detail): the `-- <args>` syntax is invalid (use `chat -q "<prompt>" -Q` instead)
 not a trustworthy signal on this build (always 0, even on real failures) — README.md state-check is
 mandatory, not a nice-to-have. Naming convention was also revised to lowercase-hyphenated
 repo-wide, since the real CLI silently lowercases profile directory names and requires exact-case
-match for `-p`. **Still not yet done:** actually installing the three packages as live profiles on
-the EC2 host and running a real Router → Intake → Script dispatch chain end to end.
+match for `-p`.
+
+**Live-installed and dispatch-tested 2026-07-26.** All three original packages are installed as
+real profiles on the EC2 host. Router successfully composed and ran a real dispatch subprocess
+against a project with a genuinely confirmed Stage 1 — the target profile (`hermes-cine-chardesign`)
+didn't exist yet at the time, so the dispatch returned exit 1 and Router correctly reported the gap
+rather than inventing a workaround. **Real bugs found and fixed along the way** (all now baked into
+every package's SOUL.md/eval.md so future stages don't repeat them): a content-injection scanner
+silently drops SOUL.md if it contains phrasing like "do not tell the user X" even when benign;
+`manifest.yaml`'s `models: {worker, escalation}` tiers and `guardrails.human_gate` field are design
+intent only — HERMES has no config-level enforcement for either, so SOUL.md must explicitly instruct
+the model every time (validated live: Router's first real dispatch ran with zero approval prompt
+until this was added); stage agents will autonomously self-author skills, invent extra files, leave
+README.md partially updated, hallucinate file writes with zero real tool calls, and leak
+project-specific details across sessions via memory — all now explicitly guarded against in SOUL.md.
+**Next up:** hermes-cine-chardesign has a real package (folds in all of the above) but hasn't been
+installed/run live yet — that's the next test, followed by a real Router-driven dispatch to it.
 
 ## Conventions to follow without re-deriving
 
