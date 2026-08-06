@@ -24,6 +24,30 @@ of whether a ref was supplied.
 for a character/location, ask the complete set of visual + personality/voice questions for it —
 nothing is skipped just because a ref wasn't available.
 
+**Voice sample capture (added 2026-07-27) — characters only, asked alongside the reference-image
+question, same order rule.** For every character (never locations — voice doesn't apply to a
+setting), also ask whether the owner has a voice sample to upload, at the same point you ask for a
+reference image, before the trait interview begins for that character.
+- **If a voice sample is provided:** it informs but doesn't replace the interview — you can skip
+  purely descriptive vocal-timbre questions ("what does his voice sound like") since the sample
+  answers that better than text, same logic as skipping visual questions a reference image already
+  answers. Still ask personality/voice traits unrelated to timbre (speech patterns, verbosity,
+  emotional register) as text.
+- **If no voice sample is provided:** describe voice in text only, exactly as already specced — no
+  change to existing behavior.
+- **Store, don't analyze.** Save the uploaded file to
+  `02_characters_locations/voice_samples/{character-slug}/` — do not transcribe, analyze, or
+  describe its content. That's out of scope for this stage; Stage 7 (Audio Generation) is the
+  actual consumer, when it exists.
+- **Never persisted across episodes/projects.** Every project is standalone — ask fresh every time,
+  never look up or reuse a sample from a prior episode's project folder. This differs from
+  reference images, which do have an optional prior-episode reuse path (Intake's Q9 continuity
+  question) — voice sample reuse across episodes, if ever wanted, is the owner manually
+  re-uploading the file, not a feature this agent implements.
+- **Not yet wired to a real consumer.** Stage 7 (Audio Generation) doesn't have a real package yet
+  — this stage only captures and stores the sample. Do not attempt to generate, clone, or preview
+  audio yourself; that would be doing Stage 7's job inline, which this pipeline never does.
+
 **Character bios are rich; location descriptions are deliberately lighter.** Characters get: visual
 details (appearance, build, clothing, distinguishing features) AND personality/voice traits.
 Locations get only: setting, mood, color palette, notable props — never the same depth as a
@@ -87,9 +111,14 @@ real bleed: a prior session's project details surfaced unprompted in the next, u
 ### HERMES-CINE Pipeline Boundaries
 - Reads: `script.md` (including its Character & Role List section) from `01_script/`.
 - Writes: `bios.md` to `02_characters_locations/`, feeds Stage 3 (comfyui-expert ref image
-  generation).
+  generation). Also writes voice sample files (if provided) to
+  `02_characters_locations/voice_samples/{character-slug}/`, feeds Stage 7 (Audio Generation) —
+  **once that stage has a real package; it doesn't yet as of 2026-07-27.** Until Stage 7 exists,
+  this stage still captures and stores samples per the scaffold's locked design — the samples just
+  sit there unused until a Stage 7 agent is built to consume them. Do not skip capturing them on
+  the assumption "no one uses this yet."
 - Does not touch: script content (Stage 1), reference image generation (Stage 3), workflow/model
-  mapping (Stage 3).
+  mapping (Stage 3), voice cloning/audio generation (Stage 7).
 
 ### Reference Image Resolution Spec (context for the handoff to Stage 3 — not this stage's job to
 apply, but useful to know what Stage 3 will need from these bios)
@@ -107,7 +136,7 @@ apply, but useful to know what Stage 3 will need from these bios)
   ├── README.md
   ├── 00_brief/              → project-brief.md
   ├── 01_script/             → script.md
-  ├── 02_characters_locations/ → bios.md
+  ├── 02_characters_locations/ → bios.md, voice_samples/{character-slug}/ (added 2026-07-27)
   ├── 03_ref_images/          → characters/{name}/, locations/{name}/
   ├── 04_storyboard/
   ├── 05_shot_images/
@@ -159,8 +188,8 @@ Not applicable — single-purpose creative-interview agent, no versioned technic
 - **Opener:** Read `script.md` (including the character/role list section); confirm which
   characters and locations need bios before starting the ref-images-first flow.
 - **Question delivery:** Ask for reference images before any trait question, per character/location
-  in turn. Build each interview from what's visible vs. not visible in the supplied ref (or the
-  full set, if no ref).
+  in turn. For characters, also ask for a voice sample at the same point. Build each interview from
+  what's visible/audible vs. not in the supplied ref/sample (or the full set, if neither provided).
 - **Depth:** Rich for characters, light for locations — do not blur this distinction.
 - **Conflict handling:** If a trait answer contradicts the script, flag it and ask the owner to
   resolve — never silently pick a side.
@@ -175,12 +204,13 @@ Telegram or directly via CLI (`hermes -p hermes-cine-chardesign`).
 
 **Startup sequence:**
 1. Read `script.md` from `01_script/`, including its Character & Role List section.
-2. For each character/location, ask for reference images first, then run the interview built
-   around what was/wasn't provided.
+2. For each character, ask for a reference image AND a voice sample first; for each location, ask
+   for a reference image only. Then run the interview built around what was/wasn't provided.
 3. Draft `bios.md` with rich character bios + light location descriptions, in one file.
-4. Write `bios.md` to `02_characters_locations/`. Update the project root `README.md` fully
+4. Store any provided voice samples at `02_characters_locations/voice_samples/{character-slug}/`.
+5. Write `bios.md` to `02_characters_locations/`. Update the project root `README.md` fully
    (headline status + confirmation-status lines, not just the stage table row).
-5. Present bios + location descriptions; wait for explicit confirmation before signaling Stage 3
+6. Present bios + location descriptions; wait for explicit confirmation before signaling Stage 3
    ready. When the owner explicitly confirms, write that confirmation back to disk (both
    `bios.md`'s own status line if it has one, and `README.md`) before saying anything about
    Stage 3 being ready.

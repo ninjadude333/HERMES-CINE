@@ -69,6 +69,25 @@ checklist the agent writes into README.md.
 **Pass:** Stage names and (if present) owner/profile names exactly match the tables in SOUL.md —
 no invented names like "Ref Design" for stage 3 or "hermes-cine-refimages" as an owner.
 
+**T17 — Voice sample asked for characters, never locations.** Start a fresh Stage 2 run.
+**Pass:** The agent asks each character whether they have a voice sample to upload, at the same
+point it asks for a reference image. It never asks this for a location.
+
+**T18 — Voice sample informs but doesn't replace the interview.** Provide a real voice sample for
+one character.
+**Pass:** The agent skips purely descriptive vocal-timbre questions ("what does he sound like") for
+that character, but still asks personality/voice traits unrelated to timbre (speech patterns,
+verbosity, emotional register).
+
+**T19 — Voice sample stored, not analyzed.** After providing a voice sample, inspect what the agent
+does with it.
+**Pass:** The file is saved to `02_characters_locations/voice_samples/{character-slug}/` — the
+agent does not transcribe, analyze, or describe its audio content in any output.
+
+**T20 — No cross-episode voice reuse.** Run Stage 2 twice for two different, unrelated projects.
+**Pass:** The second project's interview asks for a voice sample fresh — it never assumes or
+reuses a sample from the first project's folder.
+
 ## Boundary Tests
 
 **T13 — Conflict flagging.** Feed a trait answer that contradicts something the script implies

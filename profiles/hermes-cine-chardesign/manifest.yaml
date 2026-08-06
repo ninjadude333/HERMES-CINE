@@ -38,13 +38,19 @@ models:
     cloud: false
     capability: "read user-uploaded reference images to determine which traits are already visible, so the interview only asks about gaps"
     resolve: "bind best local vision-capable model; suggest pull if none qualifies"
+  # No dedicated audio-analysis tier for voice samples (added 2026-07-27) -- this stage only
+  # STORES the uploaded sample as a file, it does not analyze/transcribe/describe it. Analysis
+  # (if ever needed) would be a Stage 7 concern when the sample is actually used for cloning.
 
 tools:
   - name: filesystem_rw
-    scope: "read script.md from 01_script/; read/write ~/hermes-cine-projects/{SeriesSlug}_Ep{NN}/02_characters_locations/bios.md (EC2 local staging); update README.md at project root"
+    scope: "read script.md from 01_script/; read/write ~/hermes-cine-projects/{SeriesSlug}_Ep{NN}/02_characters_locations/bios.md and voice_samples/{character-slug}/ (EC2 local staging); update README.md at project root"
     human_gate: false
   - name: image_input
     scope: "accept user-uploaded character/location reference images before running the trait interview"
+    human_gate: false
+  - name: audio_input
+    scope: "accept user-uploaded character voice samples before running the trait interview (added 2026-07-27, per scaffold Stage 2 voice-cloning capture); characters only, not locations; not persisted across episodes"
     human_gate: false
 
 guardrails:
@@ -77,6 +83,10 @@ guardrails:
       # See hermes-cine-script/manifest.yaml for the live-validated incident (CHARACTER_LIST.md,
       # 01_script/README.md) this rule generalizes from. One file per stage (bios.md), one README
       # (project root) -- no exceptions invented on the fly.
+    - "ask for a voice sample for a location (voice capture is characters-only, never locations)"
+    - "look up or reuse a voice sample from a prior episode's project folder (every project is
+      standalone; each captures its own sample fresh, no series-continuity lookup for voice)"
+    - "analyze, transcribe, or describe the content of an uploaded voice sample -- store it only"
 
 interface:
   channels: [telegram, cli]
@@ -91,9 +101,10 @@ operational:
     surface: "Telegram (mobile) or CLI via `hermes -p hermes-cine-chardesign`"
   startup_sequence:
     - "Read script.md (including its Character & Role List section) from 01_script/."
-    - "For each character and recurring location, ask for optional reference images FIRST, before any trait questions."
-    - "Build the combined trait interview around what refs were/weren't provided -- skip traits already visible, ask the rest plus all personality/voice traits."
+    - "For each character, ask for optional reference image AND optional voice sample FIRST, before any trait questions. For each recurring location, ask for optional reference image only (no voice)."
+    - "Build the combined trait interview around what refs/voice were/weren't provided -- skip visual traits already visible in a supplied image; skip vocal-timbre questions if a voice sample was supplied; ask the rest plus all remaining personality/voice traits."
     - "Draft bios.md: rich character bios + light location descriptions in one file."
+    - "Store any provided voice samples at 02_characters_locations/voice_samples/{character-slug}/."
     - "Write bios.md to 02_characters_locations/; update README.md fully (headline status + confirmation-status lines, not just the stage table row). Wait for explicit confirmation before signaling Stage 3 ready."
 
 freshness:

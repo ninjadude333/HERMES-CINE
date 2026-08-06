@@ -6,10 +6,12 @@ Directives for HERMES to self-configure this agent from the package in this fold
    model meeting the capability + constraints in `manifest.yaml`. If none qualifies, report the gap
    and suggest an `ollama pull` candidate; ask the owner before pulling. Bind `orchestrator` to the
    latest Bedrock Haiku.
-2. **Wire tools** from the allowlist (`filesystem_rw`, `image_input`) with their stated scopes.
-   **Disable the `skills` toolset entirely** — set `agent.disabled_toolsets: [skills]` in
-   `config.yaml` as a real YAML list (not a quoted string — see hermes-cine-intake/SETUP.md for the
-   live incident where a string-literal value silently failed to disable anything).
+2. **Wire tools** from the allowlist (`filesystem_rw`, `image_input`, `audio_input`) with their
+   stated scopes. `audio_input` was added 2026-07-27 for the voice-sample capture step (characters
+   only, stored not analyzed — see SOUL.md). **Disable the `skills` toolset entirely** — set
+   `agent.disabled_toolsets: [skills]` in `config.yaml` as a real YAML list (not a quoted string —
+   see hermes-cine-intake/SETUP.md for the live incident where a string-literal value silently
+   failed to disable anything).
 3. **Install guardrails:** session token budget (150,000), secrets-by-reference resolution from
    env/SSM. Enforce `blocked_actions` as hard denials — especially the ref-images-first ordering and
    the single-file (`bios.md`) convention, since a prior stage agent (hermes-cine-script) invented
@@ -17,8 +19,9 @@ Directives for HERMES to self-configure this agent from the package in this fold
 4. **Load** `SOUL.md` as the system prompt, in particular the folder/stage-name/owner tables — these
    must be treated as authoritative, not regenerated from memory each run. No `kb/` or `skills/` in
    this package.
-5. **Run `eval.md`.** Report pass/fail per test. If more than 2 must-have tests (T2–T12) fail, do
-   not go live — review SOUL.md's Must-Have Answers against the failures.
+5. **Run `eval.md`.** Report pass/fail per test. If more than 2 must-have tests (T2–T12, or the
+   voice-sample tests T17–T20) fail, do not go live — review SOUL.md's Must-Have Answers against
+   the failures.
 6. **Go live** on configured channels (`telegram`, `cli`). Print a one-line status: agent name,
    bound models, eval pass rate.
 
@@ -34,3 +37,8 @@ Directives for HERMES to self-configure this agent from the package in this fold
 - This agent runs on EC2, same as the other text-stage agents — not DGX. Ref images referenced
   during the interview are user-uploaded input at this stage, not generated; generation happens at
   Stage 3 (comfyui-expert) after this stage's output is confirmed and synced to DGX.
+- **Voice samples (added 2026-07-27):** captured and stored the same way as reference images, but
+  there is no real Stage 7 (Audio Generation) package yet to consume them — this agent's job stops
+  at capture/storage. When Stage 7 gets built, update this note and its own SETUP.md to describe
+  how it reads `02_characters_locations/voice_samples/` for voice cloning; no change needed here at
+  that point, this agent's behavior doesn't change when a consumer becomes real.
