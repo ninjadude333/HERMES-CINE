@@ -290,6 +290,31 @@ Every column = same card template:
 - **No refs provided case:** Falls back to full combined interview covering all visual + personality traits, as originally specified
 - **Twins handling:** Shared baseline traits + individual differentiators (e.g. one wears red, one wears blue) captured within that same combined interview
 
+**Character voice sample (LOCKED, added 2026-07-27):**
+- **Per-character, optional upload** — alongside the reference-image question, also ask each
+  character whether the owner has a voice sample to provide for voice cloning. Same order rule as
+  images: asked before the trait interview begins for that character.
+- **Not persisted across episodes/projects.** Every project is standalone (per the owner's existing
+  per-episode confirmation flow) — voice samples are captured fresh per project every time, never
+  looked up from a prior episode's project folder. No series-continuity logic applies here, unlike
+  reference images' optional prior-episode reuse path (§1.5 Series Continuity) — voice sample reuse
+  across episodes, if ever wanted, is the owner manually re-uploading the same file, not an agent
+  feature.
+- **If provided:** the sample also informs (but doesn't replace) the voice/personality-trait
+  portion of the interview — the agent can skip asking purely descriptive voice questions ("what
+  does he sound like") since the sample answers that better than text, the same logic already
+  applied to visual traits when a reference image is supplied. Personality traits unrelated to
+  vocal timbre (speech patterns, verbosity, emotional register) are still asked as text regardless.
+- **If not provided:** voice is described in text only, exactly as already speced — no change to
+  existing behavior.
+- **Storage:** `02_characters_locations/voice_samples/{character-slug}/` — captured at Stage 2,
+  alongside `bios.md`, distinct from `03_ref_images/` since that folder is specifically Stage 3's
+  image-ref-lock output (a different domain, a different consuming agent).
+- **Consumption:** Stage 7 (Audio Generation) uses the stored sample as the voice-cloning reference
+  when generating that character's dialogue. This resolves Stage 7's previously open question
+  ("TTS per character? Any voice-cloning requirement?") for the voice-cloning half of that
+  question — see Stage 7 below.
+
 **Location design (LOCKED):**
 - Same ref-first order: ask for location reference images before describing
 - **Lighter treatment** than characters — key visual description only (setting, mood, color palette, notable props), not a full rich bio
@@ -309,10 +334,12 @@ Every column = same card template:
 |---|---|---|
 | LLM reasoning (bio writing, trait interview) | Yes | Core function |
 | Image input handling | Yes | To accept user-uploaded reference images before interview |
+| Audio input handling | Yes | To accept user-uploaded voice samples before interview (added 2026-07-27) |
 | Read Stage 1 output (script + character list) | Yes | Required input |
-| Filesystem read/write on DGX host | Yes | Write `bios.md` to `02_characters_locations/`, update README.md |
+| Filesystem read/write on DGX host | Yes | Write `bios.md` to `02_characters_locations/`, voice samples to `02_characters_locations/voice_samples/`, update README.md |
 | comfyui-expert catalog access | No | Bios stay purely descriptive; workflow mapping deferred to Stage 3 |
 | Image generation | No | Not until Stage 3 (user-supplied refs are input here, not generated) |
+| Voice cloning / audio generation | No | Voice sample is stored input only; cloning/generation happens at Stage 7 |
 
 **Versioning:** `bios.md`, overwritten on each edit (matches `script.md` convention)
 **Conflict handling:** If a user's trait answer conflicts with something implied in the script, agent flags it and asks the user to resolve — never silently overrides either side.
@@ -344,7 +371,14 @@ Every column = same card template:
 ### Stage 7 — Audio Generation (music / SFX / voice)
 - Tool: ComfyUI workflows (ACE-Step/MMAudio)
 - Timing: runs **after** visuals are locked, not upfront
-- OPEN: voice/dialogue — TTS per character? Any voice-cloning requirement?
+- **Voice cloning (LOCKED, added 2026-07-27):** dialogue for each character uses that character's
+  voice sample (captured at Stage 2, stored at `02_characters_locations/voice_samples/`) as the
+  cloning reference, if one was provided. Not persisted across episodes — each project's samples
+  are project-local, per the owner's standalone-per-episode approach.
+- OPEN: for characters with **no** voice sample provided at Stage 2 — generic TTS voice selection
+  logic not yet designed (e.g. does the agent pick a voice matching the text description, or ask
+  the owner to choose at this stage instead?). Music/SFX generation logic also not yet designed —
+  this section covers only the voice-cloning half of the original open question.
 
 ### Stage 8 — Assembly / Edit
 - Tool: TBD — Premiere/Resolve scripted assembly? Or agent-driven EDL/XML generation (you've done this before)?
@@ -365,7 +399,9 @@ Every column = same card template:
 - [x] Max edit rounds — LOCKED (cap 5, then force decision)
 - [ ] Character/location bible template (reuse existing?)
 - [ ] Storyboard format (visual vs text)
-- [ ] Voice/dialogue handling (TTS, cloning?)
+- [x] Voice cloning path — LOCKED (see Stage 2's voice-sample capture + Stage 7's cloning
+  consumption, 2026-07-27). Still OPEN: generic TTS voice selection for characters with no sample
+  provided, and music/SFX generation logic.
 - [ ] Assembly/editing automation level (scripted EDL vs manual)
 - [ ] Target output specs (resolution, duration, platform)
 - [ ] How comfyui-expert agent is invoked (API call? shared task queue? Kanban board itself as interface?)
